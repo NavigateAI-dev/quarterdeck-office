@@ -24,9 +24,7 @@ def upgrade() -> None:
             nullable=True,
             unique=True,
         ),
-        sa.Column(
-            "run_id", sa.Uuid(), sa.ForeignKey("runs.id", ondelete="CASCADE"), nullable=True
-        ),
+        sa.Column("run_id", sa.Uuid(), sa.ForeignKey("runs.id", ondelete="CASCADE"), nullable=True),
         sa.Column("verdict", sa.String(8), nullable=False),
         sa.Column("note", sa.Text(), nullable=True),
         # The full-team redo it led to, when the owner asked for one.

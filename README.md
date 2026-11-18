@@ -1072,14 +1072,24 @@ minutes and a few cents per run.
 
 ## Development and verification
 
+The same checks run on GitHub for every push and pull request
+(`.github/workflows/ci.yml`): lint and types, the
+unit and architecture tests, and the integration tests against PostgreSQL.
+Locally:
+
 ```sh
+uv sync --group browser          # the browser group brings Playwright's types for mypy
 uv run ruff check .
 uv run ruff format --check .
 uv run mypy
-uv run pytest -q --tb=short
+uv run pytest tests/unit tests/architecture -q --tb=short
+uv run pytest tests/integration -q --tb=short
 ```
 
-Integration suites are skipped unless `TEST_DATABASE_URL` is set, and the
+Run the unit and integration suites separately: some test files share a name
+across the two folders. The tests read settings at import time, so they need a
+`.env` with at least `DATABASE_URL` (`python3 -m scripts.init_local` writes
+one). Integration suites are skipped unless `TEST_DATABASE_URL` is set, and the
 git-dependent suites are skipped where git cannot run. To run the database
 suites against the local Compose database without printing its password:
 

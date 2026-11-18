@@ -1,0 +1,117 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_FROZEN: "1"
+  PYTHONDONTWRITEBYTECODE: "1"
+
+jobs:
+  lint:
+    name: Lint and types
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install Python and dependencies
+        # The browser group brings Playwright's types, which mypy checks.
+        run: uv sync --group browser
+
+      - name: Ruff lint
+        run: uv run ruff check .
+
+      - name: Ruff format
+        run: uv run ruff format --check .
+
+      - name: Mypy
+        run: uv run mypy
+
+      - name: JavaScript syntax
+        run: find app/api/web -name '*.js' -print0 | xargs -0 -n1 node --check
+
+  unit:
+    name: Unit and architecture tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install OCR for the source reader tests
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends --yes \
+            tesseract-ocr tesseract-ocr-eng tesseract-ocr-chi-sim tesseract-ocr-chi-tra
+
+      - name: Install Python and dependencies
+        run: uv sync
+
+      - name: Prepare settings and git
+        # Settings are read at import time, including by the architecture
+        # tests' subprocesses, so a minimal .env is needed. Nothing connects.
+        run: |
+          echo "DATABASE_URL=postgresql+psycopg://ci:ci@127.0.0.1:5432/ci" > .env
+          git config --global user.name "CI"
+          git config --global user.email "ci@localhost"
+
+      - name: Unit and architecture tests
+        run: uv run pytest tests/unit tests/architecture -q --tb=short
+
+  integration:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    services:
+      postgres:
+        image: postgres:17-bookworm
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci -d ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgresql+psycopg://ci:ci@127.0.0.1:5432/ci
+      TEST_DATABASE_URL: postgresql+psycopg://ci:ci@127.0.0.1:5432/ci
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install Python and dependencies
+        run: uv sync
+
+      - name: Prepare settings and git
+        run: |
+          echo "DATABASE_URL=$DATABASE_URL" > .env
+          git config --global user.name "CI"
+          git config --global user.email "ci@localhost"
+
+      - name: Integration tests
+        run: uv run pytest tests/integration -q --tb=short
