@@ -50,13 +50,75 @@ or anyone who wants a one-click app. It is Mac-first, and Docker Desktop is
 required.
 
 Five-minute overview for new readers: [docs/launch-kit.md](docs/launch-kit.md).
-To try it: [Local startup](#local-startup).
+To try it: [Install](#install).
 
 > **Status.** This is the first public release, shared as is under the
 > [Apache License 2.0](LICENSE) by Navigate AI. It has been built and used
 > daily on one Mac and has not yet been installed by anyone else, so expect
 > rough edges. Issues and pull requests are welcome. Mac-only parts (the calendar helper,
 > the coder on the Mac, the folder picker) are described below.
+
+## See it in one minute
+
+[![Quarterdeck in one minute: ask, plan, press Start, approve, get a document](docs/media/quarterdeck-showcase-poster.jpg)](docs/media/quarterdeck-showcase.mp4)
+
+A one-minute tour, silent with captions: [docs/media/quarterdeck-showcase.mp4](docs/media/quarterdeck-showcase.mp4).
+It shows the real interface with sample data: no model was called while
+recording, so the replies, the plan and the report on screen are examples.
+
+## Install
+
+### What you need
+
+| Requirement | Why |
+| --- | --- |
+| A Mac | Quarterdeck is Mac-first. The calendar helper, the coder on the Mac and the folder picker are macOS only. |
+| [Docker Desktop](https://www.docker.com/products/docker-desktop/) with Compose v2, running | The office and its database run in containers. |
+| Python 3.9 or later | The system `python3` is enough: the launcher uses nothing else. |
+| Git | To get a copy of this repository. |
+| 5 GB of free disk space | The launcher refuses to start with less. |
+| Ports 8000 and 5433 free on this computer | The office and its database answer there, on `127.0.0.1` only. |
+| An internet connection | To build the images on first start, and to reach your model providers. |
+| An API key from at least one model provider | Not needed to start, but the agents cannot work without one: Anthropic, OpenAI, DeepSeek, Kimi, Qwen, GLM, MiniMax, OpenRouter or any OpenAI-compatible API. You pay the provider directly. |
+
+Optional, and each can be added later: a coding CLI on your Mac (Claude Code,
+Codex, opencode or DeepSeek Harness) for work that needs code, a Slack
+workspace, and Tailscale to reach the office from your phone away from home.
+
+### Steps
+
+1. Get the code:
+
+   ```sh
+   git clone https://github.com/NavigateAI-dev/quarterdeck.git
+   cd quarterdeck
+   ```
+
+2. Start Docker Desktop and wait until it says it is running.
+
+3. Start the office:
+
+   ```sh
+   python3 -m scripts.launch
+   ```
+
+   The launcher checks Docker, disk space and the two ports, creates a private
+   `.env` and a credential key on first start, builds and starts the services,
+   and opens http://127.0.0.1:8000/ in your browser, already signed in. The
+   first start builds the images, so it takes a while; later starts are quick.
+   If a check fails, it says what to fix.
+
+4. Follow **Set up your office** in the browser: name the office, add a model
+   provider under **Connections** (keys are entered there and nowhere else),
+   and set your spending limits. To look around before entering a key, install
+   the sample task offered there: it calls nothing and costs nothing.
+
+5. Ask your first question in the box on the Desk.
+
+To stop the office, run `docker compose stop` in this folder; your data stays
+in its Docker volumes. Run `python3 -m scripts.launch` again to start it and
+sign in. More detail is under [Local startup](#local-startup), and upgrading,
+backing up and rolling back are in [`docs/operations.md`](docs/operations.md).
 
 ## Background and design
 

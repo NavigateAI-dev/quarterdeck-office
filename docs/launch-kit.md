@@ -130,14 +130,14 @@ You need a Mac with Docker Desktop and Python 3.9 or later. A coding CLI is
 optional, for building.
 
 ```sh
-git clone https://github.com/<navigate-ai-org>/<repo>.git quarterdeck && cd quarterdeck
+git clone https://github.com/NavigateAI-dev/quarterdeck.git && cd quarterdeck
 python3 -m scripts.launch
 ```
 
 The launcher checks Docker, creates a private `.env` and key, starts the
 services and opens the office already signed in. Then add a model provider
 under **Connections** and ask your first question. Details are in the
-[README](../README.md#local-startup).
+[README](../README.md#install).
 
 ---
 
