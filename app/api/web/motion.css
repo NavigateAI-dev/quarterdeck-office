@@ -1,0 +1,218 @@
+/* Geist, springs and motion.
+   One layer over the base and readability styles. Motion is for orientation:
+   it plays on what the owner did (opened, selected, pressed), never on a
+   background refresh, and "reduce motion" switches it off. */
+
+@font-face {
+  font-family: "Geist";
+  src: url("/ui/fonts/Geist-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/ui/fonts/GeistMono-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Geist for the interface; the system's CJK face for Chinese, which Geist
+     does not cover; the serif stays for titles. */
+  --sans: "Geist", -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", "Segoe UI", sans-serif;
+  --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* Spring easings. motion.js replaces these with curves sampled from its own
+     spring solver; these are close stand-ins until it runs. */
+  --spring-snappy: cubic-bezier(0.2, 0.9, 0.3, 1.05);
+  --spring-snappy-ms: 320ms;
+  --spring-smooth: cubic-bezier(0.25, 0.8, 0.3, 1);
+  --spring-smooth-ms: 480ms;
+  --spring-bouncy: cubic-bezier(0.3, 1.3, 0.4, 1);
+  --spring-bouncy-ms: 560ms;
+  --shadow-lift: 0 14px 30px -18px rgba(37, 55, 47, 0.45), 0 2px 6px -2px rgba(37, 55, 47, 0.12);
+}
+
+body {
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "ss01", "cv11";
+  letter-spacing: -0.005em;
+}
+button, input, select, textarea { font-family: var(--sans); }
+code, pre, kbd, .mono { font-family: var(--mono); }
+/* Figures line up when they change. */
+.metric strong, .detail-line strong, .count, .board-card .muted, time { font-variant-numeric: tabular-nums; }
+
+/* Things you can press give way under the finger and spring back. */
+button, a.button, .chip {
+  transition:
+    transform var(--spring-snappy-ms) var(--spring-snappy),
+    background-color 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 200ms ease;
+}
+button:active:not(:disabled), a.button:active, .chip:active { transform: scale(0.97); transition-duration: 90ms; }
+
+/* Things that open something lift towards you. */
+button.task-row, .board-card, a.room-card, a.card, .compact-task, .team-card {
+  transition:
+    transform var(--spring-smooth-ms) var(--spring-smooth),
+    box-shadow var(--spring-smooth-ms) var(--spring-smooth),
+    border-color 160ms ease, background-color 160ms ease;
+}
+button.task-row:hover, .board-card:hover, a.room-card:hover, a.card:hover, .compact-task:hover, .team-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+}
+button.task-row:active, .board-card:active, a.room-card:active { transform: translateY(0) scale(0.99); }
+
+/* Dialogs open on a spring, from where the eye already is. */
+dialog[open] { animation: dialog-in var(--spring-bouncy-ms) var(--spring-bouncy) both; }
+dialog[open]::backdrop { animation: fade-in 220ms ease both; }
+@keyframes dialog-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.965); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* Folded text and details open smoothly where the browser can. */
+details > summary { transition: color 160ms ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+  button.task-row:hover, .board-card:hover, a.room-card:hover, a.card:hover, .compact-task:hover, .team-card:hover { transform: none; }
+}
+
+/* ---- the morphing selection pill ---- */
+.has-pill { position: relative; isolation: isolate; }
+.motion-pill {
+  position: absolute; left: 0; top: 0; z-index: -1; pointer-events: none;
+  border-radius: 8px; background: #dfe8d6;
+  box-shadow: inset 0 0 0 1px rgba(40, 78, 61, 0.06);
+  will-change: transform, width, height;
+  transition: opacity 180ms ease;
+}
+.motion-pill.line { border-radius: 2px; background: var(--green); box-shadow: none; }
+/* The pill is the highlight now; the item keeps only its type. */
+#nav.has-pill > a.active { background: transparent; }
+#nav.has-pill > a:hover:not(.active) { background: rgba(224, 232, 216, 0.55); }
+.subnav.has-pill > button.active { border-bottom-color: transparent; }
+
+/* ---- the Island ---- */
+header { position: relative; }
+#runs-tray { display: none !important; }
+/* The status region is for screen readers now; the Island shows it. */
+#toast {
+  position: fixed !important; width: 1px !important; height: 1px !important; overflow: hidden !important;
+  clip: rect(0 0 0 0) !important; clip-path: inset(50%) !important; white-space: nowrap !important;
+  padding: 0 !important; margin: -1px !important; border: 0 !important; opacity: 1 !important;
+}
+.island {
+  /* Hangs from the top and grows down, as the island it is named after does. */
+  position: absolute; left: 50%; top: 21px; translate: -50% 0;
+  z-index: 40; overflow: hidden; cursor: default;
+  border-radius: 22px; background: #16211c; color: #eef3ea;
+  box-shadow: 0 10px 30px -12px rgba(22, 33, 28, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  min-width: 34px; min-height: 34px;
+}
+.island[data-state="live"], .island[data-state="expanded"] { cursor: pointer; }
+.island[data-state="expanded"] { border-radius: 24px; }
+.island:focus-visible { outline: 2px solid #8fb57a; outline-offset: 3px; }
+.island-body {
+  position: absolute; left: 0; top: 0; width: max-content; max-width: min(560px, 78vw);
+  display: flex; align-items: center; gap: 9px; padding: 8px 16px 8px 13px;
+  font-size: 0.8125rem; font-weight: 500; line-height: 18px; letter-spacing: -0.01em; white-space: nowrap;
+}
+.island-text { overflow: hidden; text-overflow: ellipsis; max-width: 420px; }
+.island[data-state="message"] .island-body { white-space: normal; }
+.island[data-state="message"] .island-text { max-width: 480px; }
+.island-dot { width: 7px; height: 7px; border-radius: 50%; background: #7fa86a; flex-shrink: 0; }
+.island[data-state="idle"] .island-text { color: #b9c6b3; font-weight: 450; }
+.island-pulse { width: 8px; height: 8px; border-radius: 50%; background: #9fd07f; flex-shrink: 0; box-shadow: 0 0 0 0 rgba(159, 208, 127, 0.6); animation: island-pulse 1.8s ease-out infinite; }
+@keyframes island-pulse { 0% { box-shadow: 0 0 0 0 rgba(159, 208, 127, 0.55); } 80%, 100% { box-shadow: 0 0 0 7px rgba(159, 208, 127, 0); } }
+.island-mark { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; background: #9fd07f; color: #16211c; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; }
+.island-mark.error { background: #f0a58f; }
+.island-panel { display: block; width: 360px; padding: 6px 2px 4px; white-space: normal; }
+.island[data-state="expanded"] .island-body { padding: 12px 14px 12px; display: block; }
+.island-title { margin: 0 0 8px; font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: #9aab94; font-weight: 600; }
+.island-panel ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.island-panel li a { display: flex; align-items: center; gap: 10px; padding: 8px 8px; border-radius: 12px; color: inherit; text-decoration: none; }
+.island-panel li a:hover { background: rgba(255, 255, 255, 0.07); }
+.island-task { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.island-step { color: #9aab94; font-size: 0.75rem; font-weight: 450; }
+.island-more { display: inline-block; margin: 8px 8px 2px; color: #b9d8a6; font-size: 0.75rem; text-decoration: none; }
+.island-more:hover { text-decoration: underline; }
+/* On a phone it floats at the bottom, within reach of a thumb. */
+@media (max-width: 760px) {
+  .island { position: fixed; top: auto; bottom: 18px; translate: -50% 0; }
+}
+
+/* ---- screens that move with intent ---- */
+.entering > * {
+  animation: rise var(--spring-smooth-ms) var(--spring-smooth) both;
+  animation-delay: calc(min(var(--i, 0), 11) * 38ms);
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px) scale(0.995); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---- rings: progress, budget, the month ---- */
+.ring { flex-shrink: 0; transform: rotate(-90deg); overflow: visible; }
+.ring circle { fill: none; stroke-width: 3; }
+.ring-track { stroke: rgba(255, 255, 255, 0.16); }
+.ring-fill {
+  stroke: #9fd07f; stroke-linecap: round; stroke-dasharray: 100;
+  transition: stroke-dashoffset var(--spring-smooth-ms) var(--spring-smooth), stroke 200ms ease;
+}
+.ring.near .ring-fill { stroke: #f2c46d; }
+.ring.over .ring-fill { stroke: #f0a58f; }
+.ring.small circle { stroke-width: 3.4; }
+/* Outside the Island, on paper. */
+.row-progress { display: inline-flex; align-items: center; gap: 6px; margin-right: 10px; color: var(--muted); }
+.row-progress .ring-track { stroke: #e1e7da; }
+.row-progress .ring-fill { stroke: var(--green); }
+
+.island-share { color: #b9c6b3; font-variant-numeric: tabular-nums; font-size: 0.75rem; }
+.island-task small { display: block; color: #9aab94; font-size: 0.75rem; font-weight: 450; overflow: hidden; text-overflow: ellipsis; }
+.island-spend { display: inline-flex; align-items: center; gap: 6px; color: #b9c6b3; font-size: 0.75rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.island-panel li a { align-items: center; }
+.island-month { display: flex; align-items: center; gap: 8px; margin: 10px 8px 2px; color: #b9c6b3; font-size: 0.75rem; font-variant-numeric: tabular-nums; }
+.island-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
+.island-sound {
+  background: rgba(255, 255, 255, 0.08); color: #dfe8da; border: 0; border-radius: 999px;
+  padding: 4px 12px; font-size: 0.75rem; min-height: 0;
+}
+.island-sound:hover { background: rgba(255, 255, 255, 0.16); }
+.island-title.amber { color: #f2c46d; margin-top: 10px; }
+.island-pulse.amber { background: #f2c46d; animation-name: island-pulse-amber; }
+@keyframes island-pulse-amber { 0% { box-shadow: 0 0 0 0 rgba(242, 196, 109, 0.6); } 80%, 100% { box-shadow: 0 0 0 7px rgba(242, 196, 109, 0); } }
+/* Anything waiting on the owner rings the Island in amber, whatever it shows. */
+.island[data-waiting="true"] { box-shadow: 0 10px 30px -12px rgba(22, 33, 28, 0.55), inset 0 0 0 1.5px rgba(242, 196, 109, 0.85); }
+.island-mark.done { background: #9fd07f; }
+.island-mark.waiting { background: #f2c46d; }
+.island-mark.alert { background: #f2c46d; }
+.island[data-state="message"] { cursor: pointer; }
+.island-panel { width: 400px; }
+
+/* ---- model health and provider balances ---- */
+.model-health { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; }
+.health-row { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+.health-row strong { display: block; font-size: var(--text-md); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.health-row small { display: block; color: var(--muted); }
+.health-times { display: flex; gap: 18px; font-variant-numeric: tabular-nums; font-size: var(--text-sm); white-space: nowrap; }
+.health-times small { display: inline; }
+.health-row .ring-track, .balance-line .ring-track { stroke: #e1e7da; }
+.health-row .ring-fill, .balance-line .ring-fill { stroke: var(--green); }
+.health-row .ring.near .ring-fill { stroke: #c98a2b; }
+.balance-value { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; text-align: right; max-width: 60%; }
+.balance-value .ring { align-self: flex-end; }
+@media (max-width: 620px) { .health-row { grid-template-columns: 34px minmax(0, 1fr); } .health-times { grid-column: 2; } }
+.island-dot.out { background: #f0a58f; }

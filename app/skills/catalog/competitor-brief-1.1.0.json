@@ -1,0 +1,12 @@
+{
+  "skill_id": "competitor-brief",
+  "name": "Competitor brief",
+  "version": "1.1.0",
+  "publisher": "Quarterdeck",
+  "description": "Competitor research from public sources and, where granted, the owner's own documents such as sales notes.",
+  "roles": ["researcher", "summarist"],
+  "permissions": ["web_search", "local_documents"],
+  "instructions": "Cover each competitor's positioning, published pricing, documented limits and notable recent changes. Where the owner's documents mention a competitor (sales notes, lost-deal reviews), include those observations and label them as internal. Separate what the competitor states about itself from what others say about it. Note the date of each source.",
+  "changelog": "Adds the owner's local documents as a source of internal observations.",
+  "review": {"status": "reviewed", "checks": ["instructions only, no executable content", "reads granted local documents; no write access"]}
+}

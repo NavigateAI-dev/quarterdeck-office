@@ -1,0 +1,307 @@
+name: quarterdeck
+
+services:
+  postgres:
+    image: postgres:17-bookworm@sha256:051f7b7b3abdd564d5d1bd1e8c4b9c1b6e77087d1dd22020ede611c096a272e0
+    environment:
+      POSTGRES_USER: quarterdeck
+      POSTGRES_DB: quarterdeck
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quarterdeck -d quarterdeck"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  migrate:
+    build:
+      context: .
+      target: runtime
+    environment: &api-environment
+      DATABASE_URL: postgresql+psycopg://quarterdeck@postgres:5432/quarterdeck
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      OFFICE_NAME: ${OFFICE_NAME:-Quarterdeck}
+      OWNER_NAME: ${OWNER_NAME:-owner}
+      # Semantic judgments for loop convergence and criterion reachability.
+      TYPESAFE_API_KEY: ${TYPESAFE_API_KEY:-}
+      OWNER_API_TOKEN: ${OWNER_API_TOKEN:-}
+      WORKSPACE_ROOT: /workspace
+      # The encrypted store lives in the workspace volume; its root key does
+      # not. The key directory is a separate read-only mount (see api volumes).
+      SECRET_STORE_PATH: ${SECRET_STORE_PATH:-/workspace/secrets/credentials.json}
+      SECRET_KEY_FILE: /run/quarterdeck-secrets/root.key
+      BACKUP_DIR: /backups
+      # How long the office's own checks of a coding task may run. Coding
+      # itself runs on the owner's Mac (Stage 36, scripts/mac_coder.py).
+      CODEX_TIMEOUT_SECONDS: ${CODEX_TIMEOUT_SECONDS:-900}
+      CODING_AGENT: ${CODING_AGENT:-claude_code}
+      ENGINEERING_REPOSITORY: ${ENGINEERING_REPOSITORY:-}
+      ENGINEERING_BASE_BRANCH: ${ENGINEERING_BASE_BRANCH:-main}
+      ENGINEERING_TEST_COMMAND: ${ENGINEERING_TEST_COMMAND:-}
+      ENGINEERING_PERMITTED_PATHS: ${ENGINEERING_PERMITTED_PATHS:-}
+      GITLAB_BASE_URL: ${GITLAB_BASE_URL:-https://gitlab.com}
+      GITLAB_PROJECT_PATH: ${GITLAB_PROJECT_PATH:-}
+      GITLAB_TOKEN: ${GITLAB_TOKEN:-}
+      FORGE_TIMEOUT_SECONDS: ${FORGE_TIMEOUT_SECONDS:-30}
+      CHIEF_MODEL_ALIAS: ${CHIEF_MODEL_ALIAS:-0001}
+      RESEARCH_MODEL_ALIAS: ${RESEARCH_MODEL_ALIAS:-0002}
+      STRATEGY_MODEL_ALIAS: ${STRATEGY_MODEL_ALIAS:-0003}
+      CRITIC_MODEL_ALIAS: ${CRITIC_MODEL_ALIAS:-0004}
+      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-240}
+      LLM_MAX_RETRIES: ${LLM_MAX_RETRIES:-2}
+      LLM_MAX_OUTPUT_TOKENS: ${LLM_MAX_OUTPUT_TOKENS:-8192}
+      DELIVERABLE_MAX_OUTPUT_TOKENS: ${DELIVERABLE_MAX_OUTPUT_TOKENS:-16384}
+      STRUCTURED_OUTPUT_ATTEMPTS: ${STRUCTURED_OUTPUT_ATTEMPTS:-3}
+      MAX_REVISION_LOOPS: ${MAX_REVISION_LOOPS:-3}
+      MAX_PARALLEL_SUBTASKS: ${MAX_PARALLEL_SUBTASKS:-4}
+      MAX_CONCURRENT_RUNS: ${MAX_CONCURRENT_RUNS:-3}
+      OFFICE_BIND: ${OFFICE_BIND:-127.0.0.1}
+      OFFICE_LAN_ADDRESSES: ${OFFICE_LAN_ADDRESSES:-}
+      REMOTE_EXCHANGE: /remote-exchange
+      CHAT_DAILY_MAX_TOKENS: ${CHAT_DAILY_MAX_TOKENS:-200000}
+      CHAT_MAX_OUTPUT_TOKENS: ${CHAT_MAX_OUTPUT_TOKENS:-700}
+      RUN_MAX_TOKENS: ${RUN_MAX_TOKENS:-400000}
+      RUN_MAX_COST_USD: ${RUN_MAX_COST_USD:-}
+      RUN_MAX_MINUTES: ${RUN_MAX_MINUTES:-30}
+      # The search key reaches the application: the search tool is application
+      # code. Model keys are not settings: they live in the encrypted store.
+      # static | brave | exa | tavily | deepseek. Exa, Tavily and DeepSeek return
+      # the page text with each result, which reaches sources a plain fetch is refused.
+      SEARCH_PROVIDER: ${SEARCH_PROVIDER:-static}
+      SEARCH_API_KEY: ${SEARCH_API_KEY:-}
+      # DeepSeek's Search and Fetch APIs: search may use this key when
+      # SEARCH_API_KEY is unset; FETCH_FALLBACK=deepseek reads a page through
+      # DeepSeek only when the office's own reader cannot ($0.75 per 1,000 pages).
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      FETCH_FALLBACK: ${FETCH_FALLBACK:-none}
+      SEARCH_BASE_URL: ${SEARCH_BASE_URL:-https://api.search.brave.com/res/v1/web/search}
+      SEARCH_MAX_RESULTS: ${SEARCH_MAX_RESULTS:-10}
+      SEARCH_TIMEOUT_SECONDS: ${SEARCH_TIMEOUT_SECONDS:-20}
+      ENABLE_PAGE_FETCH: ${ENABLE_PAGE_FETCH:-true}
+      FETCH_MAX_PAGES: ${FETCH_MAX_PAGES:-5}
+      FETCH_TIMEOUT_SECONDS: ${FETCH_TIMEOUT_SECONDS:-15}
+      # Both default to off and are opt-in through .env. Production deployment
+      # is not a flag: SPEC forbids it and the settings validator rejects true.
+      ENABLE_CODE_EXECUTION: ${ENABLE_CODE_EXECUTION:-false}
+      ENABLE_GITHUB_PR: ${ENABLE_GITHUB_PR:-false}
+      WORKSPACES_WRITABLE: ${WORKSPACES_WRITABLE:-false}
+      # Where ~/dev is mounted writable, once you add that mount yourself (6d).
+      WORKSPACES_WRITE_ROOT: ${WORKSPACES_WRITE_ROOT:-}
+      ENABLE_PRODUCTION_DEPLOYMENT: "false"
+      # Clones live on their own volume, the only one the runner can see.
+      ENGINEERING_WORKSPACE: /engineering
+      ENGINEERING_TEST_RUNNER: ${ENGINEERING_TEST_RUNNER:-isolated}
+      SOURCES_EXCHANGE: /sources-exchange
+      FETCH_EXCHANGE: /fetch-exchange
+      FETCH_ALLOW_HOSTS: ${FETCH_ALLOW_HOSTS:-}
+      # The office's own browser is asked through this folder (CU1).
+      BROWSER_EXCHANGE: /browser-exchange
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    build:
+      context: .
+      target: runtime
+    environment: *api-environment
+    ports:
+      # This computer only, unless `python3 -m scripts.access home` publishes
+      # it on the Mac's own network for a phone (OFFICE_BIND=0.0.0.0). The
+      # office still answers only the addresses it has verified.
+      - "${OFFICE_BIND:-127.0.0.1}:8000:8000"
+    volumes:
+      - workspace_data:/workspace
+      - engineering_data:/engineering
+      - sources_exchange:/sources-exchange
+      - fetch_exchange:/fetch-exchange
+      - browser_exchange:/browser-exchange
+      - remote_exchange:/remote-exchange
+      # Root key for the credential store, created by scripts.init_local.
+      - ${SECRET_KEY_DIR:-./.secrets}:/run/quarterdeck-secrets:ro
+      # Backup archives, on the host, outside every data volume.
+      - ${BACKUP_HOST_DIR:-./backups}:/backups
+    networks:
+      - default
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Runs repository-controlled test commands (V0 finding 5). It has no
+  # network, no environment secrets, no Codex or credential mounts, and sees
+  # only the engineering volume. The API hands it jobs through that volume.
+  runner:
+    build:
+      context: .
+      target: runtime
+    command: ["python", "-m", "app.runtimes.isolated"]
+    environment:
+      RUNNER_ROOT: /engineering
+      HOME: /tmp
+    volumes:
+      - engineering_data:/engineering
+    network_mode: none
+    read_only: true
+    tmpfs:
+      - /tmp:size=256m
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 2g
+    cpus: 2
+    pids_limit: 256
+    restart: unless-stopped
+
+  # Installs a build's packages when the owner allows it (PK1): network, but
+  # no secrets and no other volume; it runs only npm with install scripts off
+  # and pip with ready-made wheels, never a command it is handed.
+  installer:
+    build:
+      context: .
+      target: runtime
+    command: ["python", "-m", "app.runtimes.installer"]
+    environment:
+      INSTALLER_ROOT: /engineering
+      HOME: /tmp
+    volumes:
+      - engineering_data:/engineering
+    read_only: true
+    tmpfs:
+      - /tmp:size=1g
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 2g
+    cpus: 2
+    pids_limit: 256
+    restart: unless-stopped
+
+  # Reads public web pages for the office (research, quick lookups). It has
+  # network but holds no secrets and none of the owner's folders, reads
+  # several pages at once (WP3),
+  # keeps a page's main content (WP2), and returns text through the exchange
+  # volume only.
+  fetcher:
+    build:
+      context: .
+      target: runtime
+    command: ["python", "-m", "app.tools.fetch_service"]
+    environment:
+      FETCH_EXCHANGE: /fetch-exchange
+      # Optional: only these hosts may be read, comma separated.
+      FETCH_ALLOW_HOSTS: ${FETCH_ALLOW_HOSTS:-}
+      # A page that refuses the office is read through this instead. Empty
+      # turns the fallback off: then nothing the office reads leaves it.
+      READER_BASE_URL: ${READER_BASE_URL-https://r.jina.ai/}
+      HOME: /tmp
+    volumes:
+      - fetch_exchange:/fetch-exchange
+    restart: unless-stopped
+
+  # The office's own browser (CU1): Chromium with the public web and nothing
+  # else. A network of its own, so no page can reach the office's services; no
+  # secrets and no mounts but the exchange folder it is asked through. Each
+  # task gets a fresh browser context, with no logins, cookies or downloads.
+  browser:
+    build:
+      context: .
+      target: browser
+    command: ["python", "-m", "app.browser.service"]
+    environment:
+      BROWSER_EXCHANGE: /browser-exchange
+      HOME: /tmp
+    volumes:
+      - browser_exchange:/browser-exchange
+    networks:
+      - browser_net
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    shm_size: 512m
+    mem_limit: 2g
+    cpus: 2
+    pids_limit: 512
+    restart: unless-stopped
+
+  sources:
+    build:
+      context: .
+      target: runtime
+    command: ["python", "-m", "app.sources.reader"]
+    environment:
+      SOURCES_MOUNT: /sources
+      SOURCES_EXCHANGE: /exchange
+      HOME: /tmp
+    volumes:
+      - ${LOCAL_SOURCES_DIR:-./sources}:/sources:ro
+      - sources_exchange:/exchange
+    network_mode: none
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 1g
+    cpus: 1
+    pids_limit: 64
+    restart: unless-stopped
+
+  tests:
+    build:
+      context: .
+      target: test
+    profiles: ["test"]
+    environment:
+      <<: *api-environment
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # The private remote route (MA3): Tailscale Serve inside the owner's
+  # tailnet, in the office container's network so it can reach
+  # 127.0.0.1:8000. No published port, no Docker socket, no host privileges,
+  # no Funnel. It does nothing until the owner connects it under Settings.
+  remote:
+    build:
+      context: .
+      dockerfile: remote/Dockerfile
+    network_mode: service:api
+    environment:
+      REMOTE_EXCHANGE: /remote-exchange
+      REMOTE_HOSTNAME: ${REMOTE_HOSTNAME:-quarterdeck}
+    volumes:
+      - remote_state:/var/lib/tailscale
+      - remote_exchange:/remote-exchange
+    # Locked down like the other workers (R15). Tailscale runs in userspace,
+    # so it needs no network capability; the one kept lets root write into
+    # the exchange folder, which the office's own user owns.
+    cap_drop: ["ALL"]
+    cap_add: ["DAC_OVERRIDE"]
+    security_opt: ["no-new-privileges:true"]
+    depends_on:
+      api:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  workspace_data:
+  engineering_data:
+  sources_exchange:
+  fetch_exchange:
+  browser_exchange:
+  remote_state:
+  remote_exchange:
+
+networks:
+  # The browser's own way out to the web, shared with no other service.
+  browser_net:

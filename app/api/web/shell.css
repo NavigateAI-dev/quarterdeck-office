@@ -1,0 +1,889 @@
+/* The shell: one sidebar with the
+   Desk and the places, then each business space with its threads and their
+   state, then Settings. The Floor's identity, calmer: navy ink, one orange
+   for what needs the owner, hairlines and 8px radii. Loaded after floor.css,
+   whose tokens it reads. */
+
+body.nav-side .shell > aside {
+  background: var(--sheet);
+  border-right: 1px solid rgba(19, 35, 58, 0.12);
+}
+
+body.nav-side .shell > aside #nav {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.side-new {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(19, 35, 58, 0.22);
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: left;
+  box-shadow: none;
+}
+.side-new:hover:not(:disabled) { background: var(--light); }
+
+.side-places,
+.side-space,
+.side-end { display: flex; flex-direction: column; gap: 2px; }
+.side-end { margin-top: auto; }
+
+.side-row,
+.side-thread {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 0 10px;
+  border-radius: 8px;
+  color: var(--ink);
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+.side-row:hover,
+.side-thread:hover { background: var(--light); color: var(--ink); }
+.side-row.active { background: var(--ink); color: var(--white); font-weight: 600; }
+.side-thread.active { background: var(--light); font-weight: 600; }
+
+.side-row kbd,
+.side-new kbd {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  padding: 0;
+}
+.side-row.active kbd { color: rgba(255, 255, 255, 0.7); }
+
+.side-count {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--orange);
+  color: var(--ink);
+}
+
+.side-label {
+  margin: 0;
+  padding: 0 10px 6px;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.side-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.side-badge,
+.side-time {
+  flex: none;
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+}
+.side-badge { color: var(--orange-ink); }
+.side-time { color: var(--muted); }
+
+/* One state, one mark, everywhere (canvas: "four states, one vocabulary"). */
+.side-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid rgba(19, 35, 58, 0.3);
+}
+.side-dot.needs { background: var(--orange); border-color: var(--orange); }
+.side-dot.done { background: #1f7a4d; border-color: #1f7a4d; }
+.side-dot.failed { background: #a1263f; border-color: #a1263f; }
+
+@keyframes side-spin { to { transform: rotate(360deg); } }
+.side-spin {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid rgba(19, 35, 58, 0.2);
+  border-top-color: var(--ink);
+  animation: side-spin 1s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) { .side-spin { animation: none; } }
+
+.side-more {
+  padding: 4px 10px;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+.side-empty { padding: 0 10px; font-size: 0.8125rem; }
+
+/* The top-menu toggle is retired: one sidebar for every screen. */
+#nav-layout { display: none; }
+
+@media (max-width: 760px) {
+  .side-row,
+  .side-thread { min-height: 40px; }
+}
+
+/* The canvas's sidebar has the brand and New thread on top, nothing between:
+   the office card and the place label stay in the page (scripts fill them),
+   out of sight. */
+body.nav-side .shell > aside > .workspace,
+body.nav-side .shell > aside > .nav-label,
+body.nav-side .shell > aside .edition { display: none; }
+body.nav-side .shell > aside .brand { margin-bottom: 18px; }
+
+/* As the icon rail (581–880px, or beside the open editor): the places only,
+   each by its first letter, its name in the tooltip. Threads wait on the Desk. */
+@media (min-width: 581px) and (max-width: 880px) {
+  body.nav-side .side-new,
+  body.nav-side .side-space,
+  body.nav-side .side-empty,
+  body.nav-side .side-row kbd,
+  body.nav-side .side-count { display: none; }
+  body.nav-side .side-row { justify-content: center; padding: 0; }
+  body.nav-side .side-row .side-text { font-size: 0; }
+  body.nav-side .side-row .side-text::after { content: attr(data-short); font-size: 0.875rem; font-weight: 700; }
+}
+@media (min-width: 881px) {
+  body.nav-side.editor-open .side-new,
+  body.nav-side.editor-open .side-space,
+  body.nav-side.editor-open .side-empty,
+  body.nav-side.editor-open .side-row kbd,
+  body.nav-side.editor-open .side-count { display: none; }
+  body.nav-side.editor-open .side-row { justify-content: center; padding: 0; }
+  body.nav-side.editor-open .side-row .side-text { font-size: 0; }
+  body.nav-side.editor-open .side-row .side-text::after { content: attr(data-short); font-size: 0.875rem; font-weight: 700; }
+}
+
+/* On a phone: one row of places along the top; threads are on the Desk. */
+@media (max-width: 580px) {
+  body.nav-side .shell > aside #nav { flex-direction: row; align-items: center; gap: 4px; overflow-x: auto; }
+  body.nav-side .shell > aside #nav .side-new,
+  body.nav-side .shell > aside #nav .side-space,
+  body.nav-side .shell > aside #nav .side-empty,
+  body.nav-side .shell > aside #nav .side-row kbd { display: none; }
+  body.nav-side .shell > aside #nav .side-places,
+  body.nav-side .shell > aside #nav .side-end { flex-direction: row; margin: 0; }
+  body.nav-side .shell > aside #nav a.side-row {
+    flex-direction: row; white-space: nowrap; text-align: left; padding: 0 12px; min-height: 40px;
+  }
+}
+
+/* ---- The Desk ----
+   Only what concerns the owner now: needs you, in motion, delivered; the wall
+   and the team beside it. White cards on hairlines; orange only for needs. */
+.desk-heading h1 { font-size: 2.5rem; font-weight: 800; letter-spacing: -0.01em; }
+.desk-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  gap: 36px;
+  align-items: start;
+}
+.desk-main { display: flex; flex-direction: column; gap: 32px; min-width: 0; }
+.desk-aside { display: flex; flex-direction: column; gap: 28px; min-width: 0; }
+.desk-main .start-box { margin-bottom: 0; border: 1px solid rgba(19, 35, 58, 0.3); border-radius: 12px; }
+
+.desk-section { display: flex; flex-direction: column; gap: 12px; }
+.desk-section-head { display: flex; align-items: baseline; gap: 10px; }
+.desk-section-head h2 { margin: 0; font-size: 1.25rem; font-weight: 800; }
+.desk-section-count { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); }
+.desk-section-count.needs { color: var(--orange-ink); }
+
+.desk-main .desk-need {
+  background: var(--white);
+  border: 1px solid var(--orange);
+  border-radius: 12px;
+  box-shadow: 4px 4px 0 var(--orange);
+  padding: 18px 20px;
+}
+.desk-main .desk-need strong { color: var(--ink); font-size: 1rem; }
+.desk-main .desk-need span.why { color: var(--muted); font-size: 0.875rem; }
+
+.desk-list,
+.desk-delivered {
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  border: 1px solid rgba(19, 35, 58, 0.12);
+  border-radius: 12px;
+}
+.desk-moving {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border-top: 1px solid rgba(19, 35, 58, 0.08);
+  color: var(--ink);
+  text-decoration: none;
+}
+.desk-moving:first-child { border-top: 0; }
+.desk-moving:hover { background: var(--light); color: var(--ink); }
+.desk-moving-what { flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.desk-moving-what strong { font-size: 0.9375rem; }
+.desk-moving-what span { font-size: 0.875rem; color: var(--muted); }
+.desk-moving-meta { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); }
+.desk-delivered .desk-row { padding: 14px 20px; border-top: 1px solid rgba(19, 35, 58, 0.08); }
+.desk-delivered .desk-row:first-child { border-top: 0; }
+
+.desk-aside-block { display: flex; flex-direction: column; gap: 6px; }
+.desk-aside-block .side-label { padding: 0 0 6px; }
+.desk-colleague {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  color: var(--ink);
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+.desk-colleague .avatar { width: 28px; height: 28px; font-size: 0.75rem; }
+
+@media (max-width: 1100px) {
+  .desk-layout { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 580px) {
+  .desk-heading h1 { font-size: 1.875rem; }
+}
+
+/* ---- The thread ----
+   Your words on the right in navy; a colleague's as plain text beside their
+   face, name, role and time above; work as one light card with its live state;
+   the message box kept at the foot of the window. */
+.room-heading .eyebrow { font-family: var(--mono); letter-spacing: 0.08em; }
+.room-heading h1 { font-size: 1.625rem; font-weight: 800; }
+
+.room-feed .room-bubble {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 2px 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+.room-feed .room-message.mine .room-bubble {
+  background: var(--ink);
+  color: var(--white);
+  border-radius: 14px 14px 4px 14px;
+  padding: 12px 16px;
+  line-height: 1.55;
+}
+.room-feed .room-message.office .room-bubble {
+  border: 1px dashed rgba(19, 35, 58, 0.3);
+  border-radius: 10px;
+  padding: 8px 12px;
+  background: transparent;
+}
+.room-feed .room-meta strong { color: var(--ink); }
+.room-feed .room-meta .muted { font-size: 0.8125rem; }
+
+.room-feed .room-work-card {
+  background: var(--white);
+  border: 1px solid rgba(19, 35, 58, 0.18);
+  border-radius: 12px;
+  box-shadow: none;
+}
+.room-feed .room-work-top { align-items: center; gap: 10px; }
+.room-feed .room-work-top strong { font-size: 0.875rem; font-weight: 600; }
+.room-feed .room-work-bar { height: 4px; border-radius: 4px; background: rgba(19, 35, 58, 0.1); overflow: hidden; }
+.room-feed .room-work-bar span { background: var(--ink); border-radius: 4px; }
+
+#room-form.room-composer {
+  position: sticky;
+  bottom: 16px;
+  z-index: 3;
+  background: var(--white);
+  border: 1px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 0 -12px 24px rgba(231, 236, 240, 0.9);
+}
+#room-form.room-composer > label.field { font-size: 0.8125rem; color: var(--muted); }
+
+/* The Floor cut every corner square with an id selector (floor.css, "No soft
+   corners"). The redesign's calmer corners (8/12/14px) on the new Desk and
+   thread need a stronger selector (two ids) to show; older screens stay square for now. */
+#shell #content .side-spin { border-radius: 50%; }
+#shell #content .desk-main .start-box,
+#shell #content .desk-main .desk-need,
+#shell #content .desk-list,
+#shell #content .desk-delivered,
+#shell #content .room-feed .room-work-card { border-radius: 12px; }
+#shell #content .room-feed .room-message.mine .room-bubble { border-radius: 14px 14px 4px 14px; }
+#shell #content .room-feed .room-message.office .room-bubble { border-radius: 10px; }
+#shell #content .room-feed .room-work-bar,
+#shell #content .room-feed .room-work-bar span { border-radius: 4px; }
+#shell #content #room-form.room-composer { border-radius: 14px; }
+
+/* ---- The message box while work runs ---- */
+.composer-stack {
+  background: var(--sheet);
+  border: 1px solid rgba(19, 35, 58, 0.12);
+  border-bottom: 0;
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.8125rem;
+  position: sticky;
+  bottom: 0;
+}
+#shell #content .composer-stack { border-radius: 14px 14px 0 0; }
+.composer-stack:not([hidden]) + .composer-takeover[hidden] + #room-form.room-composer { border-top-left-radius: 0; border-top-right-radius: 0; }
+.composer-eyebrow {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  flex: none;
+}
+.composer-plan,
+.composer-note { display: flex; align-items: center; gap: 12px; min-height: 30px; }
+.composer-note { border-top: 1px solid rgba(19, 35, 58, 0.08); padding-top: 8px; }
+.composer-plan-what,
+.composer-note-text { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.composer-bar { flex: 0 1 160px; height: 4px; background: rgba(19, 35, 58, 0.1); overflow: hidden; }
+.composer-bar span { display: block; height: 100%; background: var(--ink); }
+#shell #content .composer-bar, #shell #content .composer-bar span { border-radius: 4px; }
+.composer-spend { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); flex: none; }
+
+.composer-mode { display: inline-flex; border: 1px solid rgba(19, 35, 58, 0.22); overflow: hidden; margin-left: auto; }
+#shell #content .composer-mode { border-radius: 8px; }
+.composer-mode button { border: 0; min-height: 38px; padding: 0 14px; background: var(--white); color: var(--ink); font-size: 0.8125rem; font-weight: 600; box-shadow: none; }
+.composer-mode button.on { background: var(--ink); color: var(--white); }
+#room-send[data-stop="1"] { background: var(--white); color: #a1263f; border-color: rgba(19, 35, 58, 0.22); }
+
+.composer-takeover { position: sticky; bottom: 16px; z-index: 3; }
+.composer-decision {
+  background: var(--white);
+  border: 1px solid var(--orange);
+  box-shadow: 4px 4px 0 var(--orange);
+  overflow: hidden;
+}
+#shell #content .composer-decision { border-radius: 14px; }
+.composer-decision-strip {
+  background: var(--orange-soft);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--orange-ink);
+}
+.composer-decision-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+.composer-decision-body > strong { font-size: 1.125rem; font-weight: 800; }
+.composer-decision-body p { margin: 0; color: var(--muted); font-size: 0.875rem; line-height: 1.5; }
+.composer-decision-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.composer-decision-actions > :last-child { margin-left: auto; }
+.composer-keys { font-family: var(--mono); font-size: 0.75rem; }
+
+/* ---- The everyday box (from DSH's input bar) ----
+   One clean field that grows with the words, and one toolbar row under it. */
+#room-form.room-composer { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+#room-form.room-composer textarea {
+  border: 0;
+  outline: none;
+  resize: none;
+  min-height: 0;
+  padding: 4px 2px;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  background: transparent;
+  box-shadow: none;
+  overflow-y: auto;
+}
+#room-form .room-composer-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; }
+#room-form #room-hint { flex: 1 1 180px; font-size: 0.75rem; font-family: var(--mono); min-width: 0; }
+.composer-tools { display: flex; gap: 4px; flex-wrap: wrap; }
+.composer-tool {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  box-shadow: none;
+}
+.composer-tool:hover:not(:disabled) { background: var(--light); color: var(--ink); border-color: rgba(19, 35, 58, 0.12); }
+#shell #content .composer-tool { border-radius: 6px; }
+#room-form .attach-chips:empty { display: none; }
+#room-form.is-dropping { outline: 2px dashed var(--orange); outline-offset: 4px; }
+/* The hint under the toolbar, as in DSH: tools, mode and send keep one row. */
+#room-form #room-hint { order: 10; flex: 1 1 100%; }
+#room-form #room-send { margin-left: auto; }
+@media (max-width: 600px) {
+  #room-form #room-hint { display: none; }
+  #composer-stack button { white-space: nowrap; }
+}
+
+/* ---- The Desk's start box, the same compact box as a thread's ---- */
+.start-box.start-composer { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.start-box.start-composer textarea {
+  border: 0;
+  outline: none;
+  resize: none;
+  min-height: 0;
+  padding: 4px 2px;
+  font-size: 1rem;
+  line-height: 1.5;
+  background: transparent;
+  box-shadow: none;
+  overflow-y: auto;
+}
+.start-box.start-composer .start-box-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; }
+.start-box.start-composer .start-box-row > .primary { margin-left: auto; }
+.start-box.start-composer .start-hint { flex: 1 1 100%; order: 10; font-size: 0.75rem; font-family: var(--mono); min-width: 0; }
+.start-box.start-composer .attach-chips:empty { display: none; }
+.start-box.start-composer.is-dropping { outline: 2px dashed var(--orange); outline-offset: 4px; }
+#shell #content .start-box.start-composer { border-radius: 14px; }
+@media (max-width: 600px) { .start-box.start-composer .start-hint { display: none; } }
+
+/* The Ideas card beside the Desk is narrow: the thought takes the whole
+   width and Keep sits under it, instead of squeezing the words letter by letter. */
+.idea-sheet.is-small .idea-capture { grid-template-columns: auto minmax(0, 1fr); }
+.idea-sheet.is-small .idea-capture button {
+  grid-column: 1 / -1;
+  border-left: 0;
+  border-top: 2px solid var(--rule);
+  padding: 8px 12px;
+}
+@media (max-width: 760px) { .idea-sheet.is-small .idea-capture { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---- The dock beside a thread ----
+   Board, Draft and Calendar tabs on a pale sheet with a hairline; the hard
+   offset shadow is kept for what waits for the owner, not for the dock. */
+#shell #content .topic-layout { grid-template-columns: minmax(0, 1fr) 380px; }
+#shell #content .topic-rail {
+  background: #f7f9fb;
+  border: 1px solid rgba(19, 35, 58, 0.12);
+  border-radius: 14px;
+  box-shadow: none;
+  padding: 0;
+  gap: 0;
+  /* Below the page header, which stays at the top as the thread scrolls. */
+  top: 92px;
+  max-height: calc(100vh - 108px);
+}
+.dock-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(19, 35, 58, 0.12);
+  position: sticky;
+  top: 0;
+  background: #f7f9fb;
+  z-index: 1;
+}
+.dock-tab {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  box-shadow: none;
+}
+.dock-tab[aria-selected="true"] { border-color: var(--ink); background: var(--white); color: var(--ink); }
+#shell #content .dock-tab { border-radius: 8px; }
+.dock-tabs .rail-close { margin-left: auto; }
+.dock-panel { padding: 18px; display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+#shell #content .topic-rail .dock-title { font: 800 1.0625rem/1.3 var(--sans); font-stretch: 100%; text-transform: none; letter-spacing: 0; margin: 0; }
+.dock-plan { display: flex; flex-direction: column; gap: 14px; }
+.dock-wave { display: flex; flex-direction: column; gap: 8px; }
+.dock-wave .composer-eyebrow { display: flex; align-items: center; gap: 8px; margin: 0; }
+#shell #content .topic-rail .dock-steps {
+  list-style: none;
+  margin: 0;
+  padding: 10px 12px;
+  background: var(--white);
+  border: 1px solid rgba(19, 35, 58, 0.12);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dock-wave.is-working .dock-steps { border-color: rgba(19, 35, 58, 0.3); }
+#shell #content .topic-rail .dock-step { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; font-size: 0.8125rem; }
+.dock-step.is-pending, .dock-step.is-waiting { color: var(--muted); }
+#shell #content .topic-rail .dock-todo .dock-step { justify-content: flex-start; align-items: center; }
+.dock-todo .dock-step.is-done span { text-decoration: line-through; color: var(--muted); }
+.dock-who { flex: none; font-family: var(--mono); font-size: 0.75rem; color: var(--muted); }
+.dock-kept { display: flex; flex-direction: column; gap: 16px; padding-top: 16px; border-top: 1px solid rgba(19, 35, 58, 0.12); }
+#shell #content .topic-rail .dock-day {
+  list-style: none;
+  margin: 0;
+  padding: 14px;
+  background: var(--white);
+  border: 1px solid rgba(19, 35, 58, 0.12);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+#shell #content .topic-rail .dock-event { display: flex; gap: 12px; font-size: 0.875rem; }
+.dock-event.is-free { color: var(--muted); }
+.dock-when { flex: none; width: 56px; font-family: var(--mono); font-size: 0.75rem; color: var(--muted); padding-top: 2px; }
+.dock-connect { display: flex; flex-direction: column; gap: 4px; padding: 14px; background: var(--white); border: 1px dashed rgba(19, 35, 58, 0.3); color: var(--ink); text-decoration: none; }
+#shell #content .dock-connect { border-radius: 8px; }
+.dock-connect span, .dock-more { font-size: 0.8125rem; color: var(--muted); }
+@media (max-width: 1180px) {
+  #shell #content .topic-layout { grid-template-columns: minmax(0, 1fr); }
+  #shell #content .topic-rail.open { border-radius: 0; top: 0; max-height: none; }
+}
+
+/* ---- Settings as one window (canvas "Settings · before → after") ----
+   Sections down the left, grouped Office / Reach / System; the part's tabs
+   and the screen it was on the right. Full screen on a phone. */
+dialog.settings-window {
+  width: min(1120px, calc(100vw - 48px));
+  max-width: none;
+  height: min(860px, calc(100dvh - 48px));
+  max-height: none;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgba(19, 35, 58, 0.18);
+  border-radius: 14px;
+  background: var(--white);
+  color: var(--ink);
+}
+dialog.settings-window::backdrop { background: rgba(19, 35, 58, 0.35); }
+.sw-frame { display: grid; grid-template-columns: 232px minmax(0, 1fr); height: 100%; }
+.sw-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 20px 14px;
+  background: var(--sheet);
+  border-right: 1px solid rgba(19, 35, 58, 0.12);
+  overflow-y: auto;
+}
+.sw-nav .side-label { margin: 14px 10px 6px; }
+.sw-nav .side-label:first-child { margin-top: 0; }
+.sw-section {
+  width: 100%;
+  text-align: left;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 0.875rem;
+  box-shadow: none;
+}
+.sw-section:hover { background: rgba(19, 35, 58, 0.06); }
+.sw-section.active { background: var(--ink); color: var(--white); font-weight: 600; }
+.sw-main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.sw-head { display: flex; align-items: center; gap: 12px; padding: 18px 24px 0; }
+.sw-head h2 { flex: 1; margin: 0; font: 800 1.375rem/1.2 var(--sans); }
+.sw-close { min-height: 36px; padding: 0 12px; border: 1px solid transparent; background: transparent; box-shadow: none; font-size: 1rem; }
+.sw-close:hover { background: rgba(19, 35, 58, 0.06); }
+dialog.settings-window .sw-parts { margin: 8px 24px 0; gap: 20px; }
+dialog.settings-window .sw-parts[hidden] { display: none; }
+.sw-body { flex: 1; overflow-y: auto; padding: 18px 24px 28px; overscroll-behavior: contain; }
+/* The screen's own page title is the section's here; its actions stay. */
+.sw-body > .heading { margin-bottom: 16px; }
+.sw-body > .heading h1,
+.sw-body > .heading .eyebrow { display: none; }
+.sw-body > .heading p { margin-top: 0; }
+/* Limits and models had its own tabs; here they are the section's parts. */
+.sw-body[data-screen="settings"] > .subnav { display: none; }
+.sw-body[data-screen="settings"] > .heading p { display: none; }
+@media (max-width: 760px) {
+  dialog.settings-window { width: 100vw; height: 100dvh; border-radius: 0; border: 0; }
+  .sw-frame { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  .sw-nav { flex-direction: row; align-items: center; overflow-x: auto; padding: 10px 12px; border-right: 0; border-bottom: 1px solid rgba(19, 35, 58, 0.12); }
+  .sw-nav .side-label { display: none; }
+  .sw-section { width: auto; white-space: nowrap; }
+  .sw-head { padding: 14px 16px 0; }
+  dialog.settings-window .sw-parts { margin: 6px 16px 0; overflow-x: auto; }
+  .sw-body { padding: 14px 16px 24px; }
+}
+
+/* ---- A task's model calls ---- */
+.model-call-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.model-call-open {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 12px;
+  text-align: left;
+  padding: 10px 12px;
+  background: var(--white);
+  border: 1px solid rgba(19, 35, 58, 0.12);
+  box-shadow: none;
+  font-size: 0.8125rem;
+}
+#shell #content .model-call-open { border-radius: 8px; }
+.model-call-open strong { min-width: 90px; }
+.model-call-detail { display: flex; flex-direction: column; gap: 12px; max-width: 100%; }
+.model-call-message h3 { margin: 0 0 4px; font-size: 0.75rem; font-family: var(--mono); text-transform: uppercase; color: var(--muted); }
+.model-call-message pre { margin: 0; white-space: pre-wrap; word-break: break-word; font-size: 0.75rem; max-height: 320px; overflow-y: auto; background: var(--sheet); padding: 10px; }
+dialog:has(.model-call-detail) { width: min(860px, calc(100vw - 32px)); }
+
+/* ---- The phone ----
+   Under 580 px: the places in a bar at the bottom, in reach of the thumb; the
+   Desk's message box as a pill just above it; the status pill in the header;
+   nothing floating over the page. On a computer the bar is not shown. */
+.phone-tabs { display: none; }
+.threads-list { display: flex; flex-direction: column; gap: 18px; max-width: 720px; }
+.threads-space { display: flex; flex-direction: column; gap: 2px; }
+.threads-list .side-thread { min-height: 44px; font-size: 0.9375rem; }
+.more-places { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.more-place { display: flex; flex-direction: column; gap: 4px; text-align: left; color: var(--ink); text-decoration: none; padding: 16px; font: inherit; }
+#shell #content .more-place { border-radius: 12px; }
+@media (max-width: 580px) {
+  /* The bar: four places, each a full-height target. */
+  body.nav-side .shell > aside {
+    position: fixed; left: 0; right: 0; bottom: 0; top: auto; z-index: 40;
+    width: auto; height: auto; padding: 0 0 env(safe-area-inset-bottom);
+    background: var(--sheet); border-top: 1px solid rgba(19, 35, 58, 0.12); border-bottom: 0;
+  }
+  body.nav-side .shell > aside > :not(#nav),
+  body.nav-side .shell > aside #nav > :not(.phone-tabs) { display: none !important; }
+  body.nav-side .shell > aside #nav { display: block; overflow: visible; }
+  .phone-tabs { display: flex; }
+  .phone-tab {
+    flex: 1; min-height: 56px; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 3px; font-size: 0.75rem; font-weight: 600; color: var(--muted);
+    text-decoration: none; position: relative;
+  }
+  .phone-tab.active { color: var(--ink); font-weight: 800; }
+  .phone-mark { width: 18px; height: 3px; border-radius: 2px; background: transparent; }
+  .phone-tab.active .phone-mark { background: var(--ink); }
+  .phone-count {
+    position: absolute; top: 6px; left: calc(50% + 14px); min-width: 18px; padding: 0 5px;
+    border-radius: 9px; background: var(--orange); color: var(--white); font-size: 0.6875rem; line-height: 18px;
+  }
+  /* The page clears the bar. */
+  #content { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+  main > footer { display: none; }
+  /* The status pill hangs at the top, between Back and Ask, never over the page. */
+  main > header > #island {
+    position: fixed; top: calc(8px + env(safe-area-inset-top)); bottom: auto; left: 50%;
+    translate: -50% 0; max-width: 56vw; z-index: 45;
+  }
+  main > header #breadcrumb > :not(.back-button) { display: none; }
+  /* The header stays, so the pill is always inside it. */
+  main > header { position: sticky; top: 0; z-index: 35; background: var(--paper); }
+  main > header .hosting { display: none; }
+  .phone-tab, .phone-tab:hover, .phone-tab.active { background: transparent; }
+  /* An idea stays a tap away: its button sits above the bar, and above the
+     Desk's message pill, never on them. */
+  .idea-fab { bottom: calc(72px + env(safe-area-inset-bottom)); }
+  body:has(#desk-start) .idea-fab { bottom: calc(136px + env(safe-area-inset-bottom)); }
+  /* The Desk's message box: a pill above the bar; its tools when it is in use. */
+  #shell #content .desk-main .start-box.start-composer {
+    position: fixed; left: 12px; right: 12px; bottom: calc(66px + env(safe-area-inset-bottom));
+    z-index: 30; margin: 0; padding: 6px 8px 6px 16px; border: 1px solid var(--ink);
+    border-radius: 22px; box-shadow: 0 6px 18px rgba(19, 35, 58, 0.12);
+  }
+  .desk-main .start-box.start-composer:not(:focus-within) .start-box-row .composer-tools,
+  .desk-main .start-box.start-composer:not(:focus-within) .start-hint { display: none; }
+  .desk-main .start-box.start-composer:not(:focus-within) { flex-direction: row; align-items: center; }
+  .desk-main .start-box.start-composer:not(:focus-within) textarea { flex: 1; min-width: 0; }
+  .desk-main .start-box.start-composer:not(:focus-within) .start-box-row { flex-wrap: nowrap; }
+  #shell #content .desk-main .start-box.start-composer:not(:focus-within) .start-box-row > .primary {
+    min-height: 40px; border-radius: 20px; padding: 0 16px;
+  }
+  #shell #content .desk-main .start-box.start-composer:focus-within { border-radius: 14px; }
+  body:has(#desk-start) #content { padding-bottom: calc(160px + env(safe-area-inset-bottom)); }
+  /* A thread's message box, its stack and a decision stay above the bar. */
+  #room-form.room-composer { bottom: calc(64px + env(safe-area-inset-bottom)); }
+  .composer-takeover { bottom: calc(64px + env(safe-area-inset-bottom)); }
+  .composer-stack { position: static; }
+}
+
+/* ---- The dock's Files: a folder and a file, read-only (7b) ---- */
+.dock-open { border: 0; background: transparent; padding: 0; text-align: left; color: var(--ink); font: inherit; font-size: 0.875rem; cursor: pointer; box-shadow: none; min-height: 0; }
+.dock-open:hover { text-decoration: underline; background: transparent; }
+.dock-crumbs { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.8125rem; }
+#shell #content .topic-rail .dock-file {
+  margin: 0; max-height: 52vh; overflow: auto; white-space: pre-wrap; word-break: break-word;
+  font-family: var(--mono); font-size: 0.75rem; line-height: 1.6; padding: 12px;
+  background: var(--white); border: 1px solid rgba(19, 35, 58, 0.12); border-radius: 8px;
+}
+
+/* ---- The thread's input bar, from DSH's: "+", access, model, status ---- */
+#room-form.room-composer { position: sticky; }
+.composer-plus { font-size: 1.25rem; font-weight: 500; width: 36px; padding: 0; color: var(--ink); border: 1px solid rgba(19, 35, 58, 0.16); background: var(--sheet); }
+#shell #content .composer-plus { border-radius: 50%; }
+.composer-plus[aria-expanded="true"] { background: var(--ink); color: var(--white); }
+.composer-chip {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 10px;
+  border: 1px solid rgba(19, 35, 58, 0.14); background: var(--sheet); color: var(--ink);
+  font-size: 0.8125rem; font-weight: 600; box-shadow: none; max-width: 220px;
+}
+.composer-chip:hover { border-color: rgba(19, 35, 58, 0.4); }
+#shell #content .composer-chip { border-radius: 8px; }
+#composer-model { font-family: var(--mono); font-weight: 500; color: var(--muted); background: transparent; border-color: transparent; }
+#composer-model:hover { color: var(--ink); border-color: rgba(19, 35, 58, 0.14); }
+.composer-chip-caret { font-size: 0.625rem; color: var(--muted); }
+#composer-access-slot:empty, #composer-model-slot:empty { display: none; }
+#composer-model-slot { margin-left: auto; min-width: 0; }
+#composer-model-slot ~ #room-send { margin-left: 0; }
+#composer-model-slot .composer-chip span:not([aria-hidden]) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.composer-menu, .composer-pop {
+  position: absolute; left: 0; right: 0; bottom: calc(100% + 8px); z-index: 20;
+  background: var(--white); border: 1px solid rgba(19, 35, 58, 0.16);
+  box-shadow: 0 12px 32px rgba(19, 35, 58, 0.14); padding: 8px; max-height: 60vh; overflow-y: auto;
+}
+.composer-pop { right: auto; width: min(420px, calc(100% - 16px)); left: 8px; }
+#shell #content .composer-menu, #shell #content .composer-pop { border-radius: 14px; }
+.composer-menu[hidden], .composer-pop[hidden] { display: none; }
+.composer-menu-group { margin: 6px 10px 4px; font-size: 0.75rem; color: var(--muted); }
+.composer-menu-item, .composer-pop-item {
+  display: grid; grid-template-columns: 26px auto 1fr; align-items: center; gap: 8px; width: 100%;
+  min-height: 44px; padding: 6px 10px; border: 0; background: transparent; color: var(--ink);
+  text-align: left; font-size: 0.9375rem; font-weight: 500; box-shadow: none;
+}
+.composer-pop-item { grid-template-columns: 1fr auto; grid-template-rows: auto auto; row-gap: 2px; }
+.composer-pop-item .composer-pop-about { grid-column: 1; font-size: 0.75rem; color: var(--muted); font-weight: 400; }
+.composer-pop-item .composer-check { grid-column: 2; grid-row: 1 / span 2; font-size: 1rem; }
+#shell #content .composer-menu-item, #shell #content .composer-pop-item { border-radius: 10px; }
+.composer-menu-item:hover, .composer-menu-item:focus-visible,
+.composer-pop-item:hover, .composer-pop-item:focus-visible { background: var(--light); outline: none; }
+.composer-pop-item[aria-disabled="true"] { opacity: 0.55; }
+.composer-menu-mark { text-align: center; color: var(--muted); }
+.composer-menu-about { justify-self: end; font-size: 0.8125rem; color: var(--muted); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.composer-pop-note { margin: 6px 10px 2px; font-size: 0.75rem; color: var(--muted); }
+
+.composer-goal { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; font-size: 0.8125rem; }
+.composer-goal[hidden] { display: none; }
+.composer-goal-text { flex: 1 1 auto; min-width: 0; }
+.composer-plan-pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 4px 3px 10px; background: var(--orange-soft); color: var(--orange-ink); font-weight: 600; }
+#shell #content .composer-plan-pill { border-radius: 999px; }
+.composer-link { border: 0; background: none; box-shadow: none; padding: 0 6px; min-height: 0; font-weight: 700; text-decoration: underline; color: inherit; }
+
+.composer-status { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 28px; margin: 10px 0 0; font-size: 0.8125rem; color: var(--muted); }
+.composer-status[hidden] { display: none; }
+.composer-status span { display: inline-flex; align-items: center; gap: 6px; }
+.composer-ring { width: 14px; height: 14px; border-radius: 50%; background: conic-gradient(var(--ink) calc(var(--p) * 1%), rgba(19, 35, 58, 0.14) 0); }
+
+@media (max-width: 760px) {
+  .composer-menu-item { grid-template-columns: 26px 1fr; }
+  .composer-menu-about { display: none; }
+  #composer-model-slot .composer-chip { max-width: 140px; }
+  .composer-status { gap: 4px 14px; font-size: 0.75rem; }
+}
+.composer-icon { flex: none; display: block; }
+.composer-menu-mark { display: grid; place-items: center; color: var(--muted); }
+.composer-menu-item:hover .composer-menu-mark { color: var(--ink); }
+.composer-chip .composer-icon { color: var(--muted); }
+.composer-chip-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.composer-chip-tag { margin-left: 4px; padding: 1px 6px; font: 600 0.6875rem var(--sans); color: #1d5fa6; background: #eaf2fb; }
+#shell #content .composer-chip-tag { border-radius: 999px; }
+.composer-pop-name { display: inline-flex; align-items: center; gap: 6px; }
+.composer-goal-text, .composer-plan-pill { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.composer-status .composer-icon { width: 14px; height: 14px; }
+@media (max-width: 760px) {
+  .composer-goal { flex-wrap: nowrap; }
+  .composer-goal-text { display: block; flex: 1 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .composer-goal-text .composer-icon { display: inline-block; vertical-align: -3px; margin-right: 4px; }
+  .composer-goal-text .muted { display: none; }
+  .composer-goal:has(.composer-plan-pill) { flex-wrap: wrap; }
+}
+
+/* ---- The owner's verdict on an answer (3.0) ---- */
+.verdict-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin-top: 4px; }
+.verdict-btn { min-height: 28px; min-width: 32px; padding: 0 6px; border: 1px solid transparent; background: transparent; box-shadow: none; font-size: 0.875rem; filter: grayscale(1); opacity: 0.55; }
+.verdict-btn:hover, .verdict-btn:focus-visible { opacity: 1; filter: none; border-color: rgba(19, 35, 58, 0.14); }
+.verdict-btn.on { opacity: 1; filter: none; background: var(--light); border-color: rgba(19, 35, 58, 0.18); }
+#shell #content .verdict-btn { border-radius: 6px; }
+.verdict-redo { min-height: 28px; padding: 0 10px; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(19, 35, 58, 0.22); background: var(--white); box-shadow: none; }
+#shell #content .verdict-redo { border-radius: 6px; }
+.verdict-note { font-size: 0.75rem; color: var(--muted); font-style: italic; }
+.verdict-done { font-size: 0.75rem; font-weight: 600; }
+.verdict-ask { font-size: 0.8125rem; color: var(--muted); margin-right: 4px; }
+.task-verdict { margin: -8px 0 16px; }
+@media (max-width: 760px) { .verdict-btn, .verdict-redo { min-height: 40px; } }
+.lead-quality h2 small { font-size: 0.75rem; font-weight: 500; margin-left: 6px; }
+.lead-quality-facts { margin-top: 12px; }
+
+/* ---- Workspaces: the office's branches, their changes, the owner's merge (6d) ---- */
+.ws-list, .ws-branches, .ws-diff-files { list-style: none; margin: 0; padding: 0; }
+.ws-folder, .ws-branch { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 10px 0; border-top: 1px solid rgba(19, 35, 58, 0.08); }
+.ws-folder > div, .ws-branch > div { flex: 1 1 240px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ws-folder .muted, .ws-branch .muted { font-size: 0.75rem; overflow-wrap: anywhere; }
+.ws-diff-files { margin: 6px 0 10px; font-size: 0.8125rem; }
+.ws-diff-files code { display: inline-block; min-width: 18px; }
+.ws-diff { max-height: 50vh; overflow: auto; margin: 0; padding: 10px 12px; background: var(--sheet); border: 1px solid rgba(19, 35, 58, 0.12); font: 0.75rem/1.5 var(--mono); white-space: pre; }
+
+/* ---- The confirm step for anything that widens (Settings) ---- */
+.widen-confirm { border: 1px solid var(--ink); padding: 0; max-width: min(520px, calc(100vw - 32px)); background: var(--white); color: var(--ink); box-shadow: 4px 4px 0 var(--orange); }
+.widen-confirm::backdrop { background: rgba(19, 35, 58, 0.35); }
+#shell ~ .widen-confirm, .widen-confirm { border-radius: 14px; }
+.widen-body { padding: 22px 24px; display: flex; flex-direction: column; gap: 10px; }
+.widen-body h2 { margin: 0; font-size: 1.25rem; }
+.widen-lines { margin: 0; padding-left: 20px; line-height: 1.5; }
+.widen-lines li + li { margin-top: 6px; }
+.widen-body .button-row { justify-content: flex-end; }
+.text-size-options { display: inline-flex; flex-wrap: wrap; border: 2px solid var(--rule); }
+.text-size-options button { border: 0; border-radius: 0; min-height: 40px; padding: 0 16px; background: var(--white); color: var(--ink); font-weight: 600; box-shadow: none; }
+.text-size-options button + button { border-left: 2px solid var(--rule); }
+.text-size-options button.on { background: var(--ink); color: var(--sheet); }
+.text-size-card { margin-bottom: 16px; }
+
+/* ---- Help (⌘/) ---- */
+.help-panel { display: flex; flex-direction: column; gap: 14px; max-height: 70vh; overflow-y: auto; }
+.help-keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px 24px; }
+.help-group h3 { margin: 0 0 6px; font-size: 0.75rem; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.help-group dl { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.help-group dl > div { display: grid; grid-template-columns: 110px 1fr; gap: 10px; align-items: baseline; }
+.help-group dt { white-space: nowrap; }
+.help-group dd { margin: 0; font-size: 0.875rem; }
+.help-group kbd { display: inline-block; min-width: 18px; padding: 1px 6px; border: 1px solid rgba(19, 35, 58, 0.25); border-bottom-width: 2px; background: var(--sheet); font: 600 0.75rem var(--mono); text-align: center; }
+#shell ~ dialog .help-group kbd, .help-group kbd { border-radius: 5px; }
+.help-places { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 0.875rem; }
+.side-key { margin-left: auto; padding: 0 5px; font: 600 0.6875rem var(--mono); color: var(--muted); border: 1px solid rgba(19, 35, 58, 0.18); border-radius: 4px; }
+.dock-step-tools { display: inline-flex; gap: 4px; margin-left: auto; }
+.dock-step-tools .room-tool { min-height: 26px; padding: 0 8px; font-size: 0.75rem; }
+
+/* ---- First-run onboarding (13e) ---- */
+.onboarding { border: 1px solid var(--ink); padding: 0; width: min(620px, calc(100vw - 32px)); background: var(--white); color: var(--ink); box-shadow: 6px 6px 0 var(--orange); border-radius: 16px; }
+.onboarding::backdrop { background: rgba(19, 35, 58, 0.45); }
+.onboarding-body { padding: 28px 30px 22px; display: flex; flex-direction: column; gap: 12px; }
+.onboarding-eyebrow { margin: 0; font: 600 0.75rem var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.onboarding-body h2 { margin: 0; font-size: 1.75rem; }
+.onboarding-help { margin: 0; font-size: 1rem; line-height: 1.5; }
+.onboarding-state { margin: 0; padding: 10px 12px; background: var(--sheet); border-left: 4px solid var(--line); font-size: 0.875rem; }
+.onboarding-state.is-done { border-left-color: #1f7a4a; }
+.onboarding-extra { padding: 12px 14px; background: var(--orange-soft); display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.onboarding-extra p { margin: 0; }
+.onboarding-act:empty { display: none; }
+.onboarding-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; padding-top: 14px; border-top: 1px solid rgba(19, 35, 58, 0.1); }
+.onboarding-dots { display: flex; gap: 8px; }
+.onboarding-dot { width: 12px; height: 12px; min-height: 0; padding: 0; border-radius: 50%; border: 2px solid var(--line); background: var(--white); box-shadow: none; }
+.onboarding-dot.done { background: #1f7a4a; border-color: #1f7a4a; }
+.onboarding-dot.on { border-color: var(--ink); transform: scale(1.25); }

@@ -1,0 +1,19 @@
+.git
+.env
+.env.*
+# The template holds placeholders only, and the test image asserts that it
+# documents every setting. Real env files stay excluded by the rule above.
+!.env.example
+.venv
+.omx
+__pycache__
+**/__pycache__
+.pytest_cache
+.mypy_cache
+.ruff_cache
+workspace
+.secrets
+backups
+sources
+sources-exchange
+.calendar-helper

@@ -1,0 +1,83 @@
+[project]
+name = "quarterdeck"
+version = "0.1.0"
+license = "Apache-2.0"
+description = "A persistent, approval-gated AI work organization"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+  "alembic>=1.15,<2",
+  "anthropic>=1,<2",
+  "cryptography>=44,<47",
+  "fastapi>=0.115,<1",
+  "feedparser>=6.0,<7",
+  "httpx>=0.28,<1",
+  "icalendar>=6,<7",
+  "langgraph>=0.2,<1",
+  "langgraph-checkpoint-postgres>=2,<3",
+  "openai>=2,<3",
+  "openpyxl>=3.1,<4",
+  "psycopg[binary,pool]>=3.2,<4",
+  "pydantic>=2.10,<3",
+  "pydantic-settings>=2.7,<3",
+  "pyobjc-framework-eventkit>=10 ; sys_platform == 'darwin'",
+  "pypdf>=6",
+  "pypdfium2>=5",
+  "python-docx>=1.1,<2",
+  "python-pptx>=1,<2",
+  "recurring-ical-events>=3,<4",
+  "segno>=1.6.6",
+  "sqlalchemy>=2.0,<3",
+  "typesafe-sdk>=0.7.0",
+  "uvicorn>=0.34,<1",
+  "websockets>=15",
+  "yt-dlp>=2026.1",
+]
+
+[dependency-groups]
+# The office's own browser (CU1): installed only in its container.
+browser = [
+  "playwright>=1.48,<2",
+]
+dev = [
+  "mypy>=1.15,<2",
+  "pytest>=8.3,<10",
+  "pytest-asyncio>=0.25,<2",
+  "pyyaml>=6,<7",
+  "ruff>=0.11,<1",
+  "types-openpyxl>=3.1",
+  "types-pyyaml>=6,<7",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+markers = [
+  "integration: requires a dedicated PostgreSQL test connection",
+  "browser: drives a real browser against a running office",
+]
+# Browser tests need an office to be running, so they are asked for by name:
+#   uv run pytest -m browser
+addopts = "-m 'not browser'"
+filterwarnings = [
+  "error",
+  # Emitted by langgraph's checkpoint serializer at import time, not by our code.
+  "ignore::langchain_core._api.deprecation.LangChainPendingDeprecationWarning",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "S"]
+ignore = ["UP046", "S105"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["app", "scripts"]
+plugins = ["pydantic.mypy"]

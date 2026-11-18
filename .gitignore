@@ -1,0 +1,32 @@
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.omx/logs/
+.omx/state/
+.omx/metrics.json
+/workspace/projects/
+*.egg-info/
+dist/
+build/
+
+.gstack/
+.secrets/
+/backups/
+/sources/
+/sources-exchange/
+
+# The calendar helper app built on this Mac (CAL5).
+.calendar-helper/
+.coder-helper/
+
+# macOS and local tool settings
+.DS_Store
+.claude/settings.local.json

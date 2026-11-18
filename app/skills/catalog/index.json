@@ -1,0 +1,24 @@
+{
+  "comparison-table": {
+    "1.0.0": {
+      "file": "comparison-table-1.0.0.json",
+      "sha256": "cea4bae975bdcd5d157db79deda9ee8c079beac04c983f5b416bab770cdb7d65"
+    }
+  },
+  "competitor-brief": {
+    "1.0.0": {
+      "file": "competitor-brief-1.0.0.json",
+      "sha256": "9516d6ebdb02b84ad96f60817ab1d7c69dbd2747ec62b0ecbbf4b8b1da01ac31"
+    },
+    "1.1.0": {
+      "file": "competitor-brief-1.1.0.json",
+      "sha256": "71c8be97a47291ced0b557ac5669ecef01fddd9dd5c7d97069c174d37613d378"
+    }
+  },
+  "source-quality-check": {
+    "1.0.0": {
+      "file": "source-quality-check-1.0.0.json",
+      "sha256": "76201ab7172ce4dc3fd3d934ddd2c0057df42b261467826f2cb85bdfc1c68791"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "skill_id": "comparison-table",
+  "name": "Comparison table",
+  "version": "1.0.0",
+  "publisher": "Quarterdeck",
+  "description": "Present option comparisons as a table with one source per row, published units kept, and gaps marked rather than filled.",
+  "roles": ["summarist", "strategist"],
+  "permissions": [],
+  "instructions": "When options are compared, produce a comparison table first: one row per option or tier, one column per dimension the objective names. Keep each value in its published unit. Write 'not documented' rather than estimating. Name the source of every row. Keep surrounding prose to what the table cannot show.",
+  "review": {"status": "reviewed", "checks": ["instructions only, no executable content", "requests no access"]}
+}

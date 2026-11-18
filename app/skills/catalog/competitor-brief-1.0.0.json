@@ -1,0 +1,11 @@
+{
+  "skill_id": "competitor-brief",
+  "name": "Competitor brief",
+  "version": "1.0.0",
+  "publisher": "Quarterdeck",
+  "description": "Structure competitor research around positioning, pricing, limits and recent changes, from public sources.",
+  "roles": ["researcher", "summarist"],
+  "permissions": ["web_search"],
+  "instructions": "Cover each competitor's positioning, published pricing, documented limits and notable recent changes. Separate what the competitor states about itself from what others say about it. Note the date of each source.",
+  "review": {"status": "reviewed", "checks": ["instructions only, no executable content", "requests no write access"]}
+}

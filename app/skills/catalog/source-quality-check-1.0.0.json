@@ -1,0 +1,11 @@
+{
+  "skill_id": "source-quality-check",
+  "name": "Source quality check",
+  "version": "1.0.0",
+  "publisher": "Quarterdeck",
+  "description": "Prefer the subject's own pages, record what each source can and cannot establish, and flag stale or indirect evidence.",
+  "roles": ["researcher"],
+  "permissions": ["web_search"],
+  "instructions": "Before relying on a source, state whether it is the subject's own record. Prefer official documentation, pricing and policy pages over aggregators. When only an aggregator states a fact, report it as unconfirmed. Record for each key finding which source establishes it.",
+  "review": {"status": "reviewed", "checks": ["instructions only, no executable content", "requests no write access", "sample task reviewed"]}
+}

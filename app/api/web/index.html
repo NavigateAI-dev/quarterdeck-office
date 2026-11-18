@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quarterdeck</title>
+<link rel="stylesheet" href="/ui/styles.css">
+<link rel="stylesheet" href="/ui/office.css">
+<link rel="preload" href="/ui/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/ui/motion.css">
+<link rel="preload" href="/ui/fonts/Archivo-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/ui/floor.css">
+<link rel="stylesheet" href="/ui/shell.css">
+<link rel="stylesheet" href="/ui/thread.css">
+</head>
+<body>
+<section id="signed-out" class="signed-out" hidden>
+  <div class="card">
+    <span class="logo">qd</span>
+    <h1>Open your office</h1>
+    <form id="password-form" class="password-form" hidden>
+      <label class="field" for="login-name">Sign-in name</label>
+      <input id="login-name" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+      <label class="field" for="login-password">Password</label>
+      <input id="login-password" type="password" autocomplete="current-password" required>
+      <label class="check"><input id="login-remember" type="checkbox"> Keep me signed in on this device for 30 days</label>
+      <div class="button-row"><button class="primary">Sign in</button></div>
+    </form>
+    <p class="password-or muted" hidden>Or, on the computer that runs the office:</p>
+    <p class="launch-intro">Your office runs on this computer and only you can open it. In the Quarterdeck folder, run:</p>
+    <pre>python3 -m scripts.launch</pre>
+    <p class="muted">It starts the office and opens this page signed in. No account or sign-up is needed.</p>
+    <details>
+      <summary>Advanced: sign in with the owner key</summary>
+      <form id="token-form">
+        <label class="field" for="owner-token">Owner key (OWNER_API_TOKEN from your .env)</label>
+        <input id="owner-token" type="password" autocomplete="off" required>
+        <div class="button-row"><button class="primary">Sign in</button></div>
+      </form>
+    </details>
+    <p id="signed-out-error" class="error-text" role="alert"></p>
+  </div>
+</section>
+<div class="shell" id="shell" hidden>
+  <aside>
+    <a class="brand" href="#home"><span class="logo">qd</span> quarterdeck<span class="edition">V1</span></a>
+    <div class="workspace" aria-label="Your office">
+      <span class="workspace-icon" id="office-initial">A</span>
+      <span><span id="office-name">Quarterdeck</span><small>Private local workspace</small></span>
+    </div>
+    <div class="nav-label">YOUR OFFICE</div>
+    <nav aria-label="Main navigation" id="nav"></nav>
+    <div class="side-bottom">
+      <a class="setup-link" href="#setup" id="setup-link" hidden>◈ &nbsp; Set up your office <span class="count" id="setup-count"></span></a>
+      <div class="pulse" id="pulse">Checking services…</div>
+      <button type="button" class="nav-layout" id="nav-layout" data-action="nav-layout:side">◧ <span>Side menu</span></button>
+      <div class="person">
+        <span class="avatar owner" id="owner-initials">·</span>
+        <div><span id="owner-name">Owner</span><small>Office owner</small></div>
+        <button type="button" data-action="sign-out" aria-label="Sign out" title="Sign out">⎋</button>
+      </div>
+    </div>
+  </aside>
+  <main>
+    <header>
+      <span id="breadcrumb">Office</span>
+      <div id="island" class="island" data-state="idle" role="button" tabindex="0" aria-label="Office status"></div>
+      <div class="head-right">
+        <button type="button" id="runs-tray" class="runs-tray" hidden data-action="runs-open"></button>
+        <button type="button" class="runs-tray" data-action="chat-open" aria-label="Ask the office">Ask</button>
+        <span class="hosting" id="hosting">● Local office</span>
+      </div>
+    </header>
+    <div id="content" aria-live="polite"></div>
+    <footer>Quarterdeck <span>Thoughtful work. Shared intelligence.</span></footer>
+  </main>
+</div>
+<dialog id="modal"><div id="modal-content"></div></dialog>
+<div id="toast" role="status"></div>
+<script src="/ui/office/core.js"></script>
+<script src="/ui/office/widen.js"></script>
+<script src="/ui/office/motion.js"></script>
+<script src="/ui/office/events.js"></script>
+<script src="/ui/office/home.js"></script>
+<script src="/ui/office/tasks.js"></script>
+<script src="/ui/office/coder_review.js"></script>
+<script src="/ui/office/editor.js"></script>
+<script src="/ui/office/flow.js"></script>
+<script src="/ui/office/progress.js"></script>
+<script src="/ui/office/rooms.js"></script>
+<script src="/ui/office/room_days.js"></script>
+<script src="/ui/office/composer.js"></script>
+<script src="/ui/office/composer_plus.js"></script>
+<script src="/ui/office/verdicts.js"></script>
+<script src="/ui/office/dock.js"></script>
+<script src="/ui/office/model_calls.js"></script>
+<script src="/ui/office/workspaces.js"></script>
+<script src="/ui/office/phone.js"></script>
+<script src="/ui/office/board.js"></script>
+<script src="/ui/office/projects.js"></script>
+<script src="/ui/office/chat.js"></script>
+<script src="/ui/office/handbook.js"></script>
+<script src="/ui/office/agents.js"></script>
+<script src="/ui/office/knowledge.js"></script>
+<script src="/ui/office/attach.js"></script>
+<script src="/ui/office/tools.js"></script>
+<script src="/ui/office/connections.js"></script>
+<script src="/ui/office/policies.js"></script>
+<script src="/ui/office/settings.js"></script>
+<script src="/ui/office/calendars.js"></script>
+<script src="/ui/office/calendar_view.js"></script>
+<script src="/ui/office/ideas.js"></script>
+<script src="/ui/office/watches.js"></script>
+<script src="/ui/office/routines.js"></script>
+<script src="/ui/office/archive.js"></script>
+<script src="/ui/office/widgets.js"></script>
+<script src="/ui/office/accounts.js"></script>
+<script src="/ui/office/providers.js"></script>
+<script src="/ui/office/access.js"></script>
+<script src="/ui/office/setup.js"></script>
+<script src="/ui/office/onboarding.js"></script>
+<script src="/ui/office/live.js"></script>
+<script src="/ui/office/settings_window.js"></script>
+<script src="/ui/office/help.js"></script>
+<script src="/ui/office/main.js"></script>
+</body>
+</html>

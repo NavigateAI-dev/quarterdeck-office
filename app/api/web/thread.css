@@ -1,0 +1,261 @@
+/* ---- The conversation, after assistant-ui (MIT, github.com/assistant-ui) ----
+   Its design rebuilt in the office's own markup, nothing copied in: one centred
+   column; your words in a soft bubble on the right; a colleague's as plain text
+   on the page, under a small name line; quiet icon bars under each message; a
+   single rounded box with a round send button; 150ms arrivals. Loaded last.
+   "#shell #content" outranks the Floor's square corners (floor.css). */
+:root {
+  --thread-width: 44rem;
+  --thread-soft: rgba(19, 35, 58, 0.07);
+  --thread-line: rgba(19, 35, 58, 0.12);
+  --thread-line-strong: rgba(19, 35, 58, 0.3);
+  --thread-radius: 18px;
+}
+
+/* ---- The column ---- */
+#room-messages { max-width: var(--thread-width); margin-inline: auto; }
+#shell #content .topic-main > .subnav { max-width: var(--thread-width); margin-inline: auto; }
+
+:is(.room-feed, .room-thread-feed) > li { margin-top: 20px; }
+:is(.room-feed, .room-thread-feed) > li.grouped { margin-top: 2px; }
+
+/* ---- Messages ---- */
+:is(.room-feed, .room-thread-feed) .room-message:not(.mine) { display: block; }
+:is(.room-feed, .room-thread-feed) .room-message:not(.mine) > .avatar {
+  position: absolute; top: 0; left: 0; width: 22px; height: 22px; font-size: 0.625rem;
+}
+.room-avatar-gap { display: none; }
+:is(.room-feed, .room-thread-feed) .room-message:not(.mine) .room-said { max-width: 100%; }
+:is(.room-feed, .room-thread-feed) .room-message:not(.mine) .room-meta { padding-left: 30px; min-height: 22px; line-height: 22px; margin-bottom: 4px; }
+:is(.room-feed, .room-thread-feed) .room-meta strong { font-size: 0.8125rem; font-weight: 600; }
+:is(.room-feed, .room-thread-feed) .room-meta .muted { font-size: 0.75rem; }
+
+:is(.room-feed, .room-thread-feed) .room-bubble { border: 0; background: transparent; box-shadow: none; padding: 0; font-size: 1rem; line-height: 1.625; }
+.room-text { font-size: 1rem; line-height: 1.625; }
+
+/* Your words: dark on a soft bubble, leaving the left of the column free. */
+:is(.room-feed, .room-thread-feed) .room-message.mine .room-said { max-width: calc(100% - 72px); }
+:is(.room-feed, .room-thread-feed) .room-message.mine .room-meta { display: flex; justify-content: flex-end; min-height: 18px; line-height: 18px; opacity: 0; transition: opacity 0.15s; }
+:is(.room-feed, .room-thread-feed) .room-message.mine .room-meta strong { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+:is(.room-feed, .room-thread-feed) .room-message.mine:hover .room-meta,
+:is(.room-feed, .room-thread-feed) .room-message.mine:focus-within .room-meta { opacity: 1; }
+@media (hover: none) { :is(.room-feed, .room-thread-feed) .room-message.mine .room-meta { opacity: 1; } }
+#shell #content :is(.room-feed, .room-thread-feed) .room-message.mine .room-bubble,
+#room-thread .room-thread-feed .room-message.mine .room-bubble {
+  background: var(--thread-soft); color: var(--ink); border: 0; box-shadow: none;
+  border-radius: var(--thread-radius); padding: 8px 16px; line-height: 1.55;
+}
+.room-message.mine .room-bubble .room-text,
+.room-message.mine .room-bubble p { color: var(--ink); }
+.room-message.mine .room-bubble .muted, .room-message.mine .room-bubble small { color: var(--muted); opacity: 1; }
+.room-message.mine .room-bubble a { color: var(--ink); }
+#shell #content .room-message.mine .room-bubble .room-quote,
+#room-thread .room-message.mine .room-bubble .room-quote { color: var(--ink); background: rgba(19, 35, 58, 0.05); border-left-color: var(--thread-line-strong); }
+
+/* The office's own notes: small and to one side of the talk. */
+#shell #content :is(.room-feed, .room-thread-feed) .room-message.office .room-bubble,
+#room-thread .room-thread-feed .room-message.office .room-bubble { border: 0; padding: 0; background: transparent; border-radius: 0; }
+.room-message.office .room-text { font-size: 0.875rem; color: var(--muted); }
+
+#shell #content .room-quote { border-radius: 8px; font-size: 0.8125rem; font-weight: 400; }
+.room-empty { border: 0; padding: 48px 8px 24px; }
+.room-empty p:first-child strong { font-size: 1.5rem; font-weight: 500; letter-spacing: -0.01em; }
+
+/* Arrivals: 150ms, up from just below; only new messages (roomMarkArrivals). */
+@keyframes thread-arrive { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.room-arrives { animation: thread-arrive 0.15s ease-out both; }
+@media (prefers-reduced-motion: reduce) { .room-arrives { animation: none; } }
+
+/* ---- Action bars: icons, quiet until the message is hovered ---- */
+.icon-tool {
+  display: inline-grid; place-items: center; width: 28px; height: 28px; min-height: 0; padding: 0;
+  border: 0; background: transparent; color: var(--muted); box-shadow: none; cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.icon-tool:hover:not(:disabled) { background: var(--thread-soft); color: var(--ink); box-shadow: none; transform: none; }
+#shell #content .icon-tool, #room-thread .icon-tool { border-radius: 8px; }
+.icon-tool .composer-icon { width: 15px; height: 15px; }
+
+.room-tools { align-items: center; flex-wrap: wrap; gap: 2px; margin-top: 2px; margin-left: -6px; min-height: 28px; }
+.room-message.mine .room-tools { justify-content: flex-end; margin-left: 0; margin-right: -6px; }
+/* The newest message keeps its bar showing; a verdict given stays in sight. */
+.room-feed > .room-message:last-child .room-tools,
+.room-tools:has(.verdict-btn.on), .room-tools:has(.verdict-redo), .room-tools:has(.verdict-done) { opacity: 1; }
+
+.room-tools .verdict-row { display: contents; }
+.verdict-btn { display: inline-grid; place-items: center; width: 28px; height: 28px; min-width: 0; min-height: 0; padding: 0; color: var(--muted); filter: none; opacity: 1; border: 0; }
+.verdict-btn .composer-icon { width: 15px; height: 15px; }
+.verdict-btn:hover, .verdict-btn:focus-visible { background: var(--thread-soft); color: var(--ink); }
+.verdict-btn.on { background: var(--thread-soft); color: var(--ink); }
+#shell #content .verdict-btn { border-radius: 8px; }
+.room-tools .verdict-note, .room-tools .verdict-redo, .room-tools .verdict-done { margin-inline: 4px; font-size: 0.75rem; }
+
+/* ---- What an agent called, and what it asks to call ---- */
+.room-actions { gap: 8px; margin-top: 10px; }
+.room-tools-used { display: flex; gap: 8px; align-items: baseline; margin: 0; font-size: 0.8125rem; color: var(--muted); }
+.room-tools-used .composer-icon { width: 14px; height: 14px; flex-shrink: 0; align-self: center; }
+
+/* ---- The steps behind a reply, and what it rests on ---- */
+.room-steps { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; font-size: 0.8125rem; color: var(--muted); }
+#shell #content .room-step { display: flex; gap: 8px; align-items: flex-start; margin: 0; padding: 0; border: 0; overflow-wrap: anywhere; }
+.room-step .composer-icon, .room-step .side-spin, .room-step b { width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; }
+.room-step b { display: grid; place-items: center; border-radius: 50%; font-size: 0.625rem; line-height: 1; color: var(--white); background: var(--muted); }
+.room-step.bad { color: var(--ink); }
+.room-step.bad b { background: var(--clay, #b4532a); }
+.room-typing .room-steps { margin-bottom: 6px; }
+.room-sources { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 0.8125rem; }
+#shell #content .room-source { display: inline-block; max-width: 100%; min-height: 0; padding: 2px 8px; overflow: hidden; font: inherit; font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); background: var(--thread-soft); border: 0; border-radius: 8px; box-shadow: none; text-decoration: none; }
+#shell #content a.room-source:hover, #shell #content button.room-source:hover { text-decoration: underline; }
+.room-proposed-call, .room-proposed-event {
+  width: 100%; max-width: none; box-sizing: border-box; display: grid; gap: 6px; margin: 0; padding: 12px 14px;
+  border: 1px solid var(--thread-line); background: var(--white); box-shadow: none;
+}
+#shell #content .room-proposed-call, #shell #content .room-proposed-event { border-radius: 12px; }
+.room-proposed-call .floor-room-label, .room-proposed-event .floor-room-label { font: 500 0.75rem var(--sans); letter-spacing: 0; text-transform: none; color: var(--muted); }
+.room-proposed-call strong, .room-proposed-event strong { font-size: 0.875rem; font-weight: 600; }
+.room-proposed-call code { display: block; padding: 10px; font-size: 0.75rem; white-space: pre-wrap; color: var(--ink); background: var(--thread-soft); }
+#shell #content .room-proposed-call code { border-radius: 6px; }
+.room-proposed-call .room-action, .room-proposed-event .room-action { justify-self: start; margin: 2px 0 0; }
+#shell #content .room-actions .room-action { min-height: 32px; padding: 0 14px; font-size: 0.8125rem; border-radius: 999px; box-shadow: none; }
+
+/* Work and task lines, in the same quiet card. */
+#shell #content .room-feed .room-work-card { border-color: var(--thread-line); }
+.room-feed .room-line { border-color: var(--thread-line); background: transparent; }
+#shell #content .room-feed .room-line { border-radius: 10px; }
+
+/* ---- The box ---- */
+#shell #content #room-form.room-composer,
+#shell #content .start-box.start-composer,
+#room-thread .room-thread-composer {
+  border: 1px solid var(--thread-line-strong); border-radius: var(--thread-radius); box-shadow: none;
+  background: var(--white); padding: 10px; cursor: text; transition: border-color 0.15s;
+}
+#shell #content #room-form.room-composer:focus-within,
+#shell #content .start-box.start-composer:focus-within,
+#room-thread .room-thread-composer:focus-within { border-color: var(--ink); }
+#room-form.room-composer textarea, .start-box.start-composer textarea, .room-thread-composer textarea {
+  min-height: 40px; max-height: 12rem; padding: 4px 10px; font-size: 1rem; line-height: 1.5; border: 0; outline: 0; resize: none; background: transparent;
+}
+#room-form textarea::placeholder, .start-box.start-composer textarea::placeholder { color: var(--muted); opacity: 0.8; }
+#room-form .room-composer-row { flex-wrap: nowrap; gap: 4px; cursor: text; }
+#room-form .composer-tools, #room-form #composer-access-slot, #room-form #composer-model-slot { min-width: 0; }
+#room-form .composer-chip { max-width: 100%; }
+#room-thread .room-composer-row .primary { min-height: 32px; padding: 0 14px; border-radius: 999px; box-shadow: none; }
+#room-thread .room-thread-composer .room-composer-row .muted { padding-inline: 10px; }
+.start-box.start-composer .start-box-row { gap: 4px; }
+
+/* The round send: an arrow; a square to stop. */
+#shell #content .composer-send, #shell #content #room-form .composer-send {
+  display: inline-grid; place-items: center; flex-shrink: 0; width: 32px; height: 32px; min-height: 0; min-width: 0;
+  padding: 0; border-radius: 50%; box-shadow: none; background: var(--ink); color: var(--white); border: 0;
+}
+#shell #content .composer-send:hover { background: var(--ink); opacity: 0.85; transform: none; box-shadow: none; }
+#shell #content #room-send[data-stop="1"] { background: var(--ink); color: var(--white); border: 0; }
+#shell #content .desk-main .start-box.start-composer:not(:focus-within) .start-box-row > .composer-send { width: 32px; min-height: 0; height: 32px; padding: 0; border-radius: 50%; }
+.composer-send .composer-icon { width: 16px; height: 16px; }
+
+/* The tools: ghost buttons, the same height as the send. */
+#shell #content #room-form .composer-plus { width: 32px; min-height: 32px; border: 0; background: transparent; color: var(--muted); }
+#shell #content #room-form .composer-plus:hover { background: var(--thread-soft); color: var(--ink); }
+#shell #content #room-form .composer-plus[aria-expanded="true"] { background: var(--thread-soft); color: var(--ink); }
+#room-form .composer-tool.room-at { width: 32px; height: 32px; min-height: 32px; padding: 0; border: 0; }
+#room-form .composer-tool.room-at:hover { background: var(--thread-soft); }
+#shell #content #room-form .composer-tool.room-at { border-radius: 50%; }
+#room-form .composer-tools { flex-wrap: nowrap; align-items: center; }
+#room-form .composer-chip { border: 0; background: transparent; color: var(--muted); font-weight: 500; min-height: 32px; padding: 0 8px; }
+#room-form .composer-chip:hover { background: var(--thread-soft); color: var(--ink); }
+#shell #content #room-form .composer-chip { border-radius: 999px; }
+#room-form #composer-model { font-family: var(--sans); }
+#shell #content .composer-mode { border-radius: 999px; border-color: var(--thread-line); margin-left: 4px; flex-shrink: 0; }
+#room-form .composer-mode button { min-height: 30px; padding: 0 10px; font-size: 0.75rem; }
+
+/* The hint only while typing: the empty box stays one quiet shape. */
+#room-form #room-hint, .start-box.start-composer .start-hint { padding-inline: 10px; font-family: var(--sans); font-size: 0.75rem; }
+#room-form:not(:focus-within) #room-hint,
+.start-box.start-composer:not(:focus-within) .start-hint { display: none; }
+#room-form #room-hint { order: 0; flex: 1 1 0; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+#shell #content .composer-menu, #shell #content .composer-pop { border-radius: 14px; border-color: var(--thread-line); }
+#shell #content .attach-chip { border: 1px solid var(--thread-line); border-radius: 10px; background: var(--thread-soft); }
+#shell #content .composer-stack { margin-top: 16px; border-color: var(--thread-line); border-radius: var(--thread-radius) var(--thread-radius) 0 0; }
+#shell #content .composer-stack:not([hidden]) + .composer-takeover[hidden] + #room-form.room-composer { margin-top: 0; border-top-left-radius: 0; border-top-right-radius: 0; }
+.composer-status { font-size: 0.75rem; }
+.composer-status .composer-icon { width: 13px; height: 13px; }
+
+/* Back to the newest message: round, centred above the box. */
+.room-to-bottom { position: absolute; top: -44px; left: 50%; margin-left: -16px; width: 32px; height: 32px; background: var(--white); border: 1px solid var(--thread-line-strong); color: var(--ink); }
+.room-to-bottom[hidden] { display: none; }
+.room-to-bottom:hover:not(:disabled) { background: var(--white); }
+#shell #content .room-to-bottom { border-radius: 50%; }
+
+/* ---- Asking the office ---- */
+.chat-turn.user { display: flex; justify-content: flex-end; }
+.chat-turn.user p { max-width: 85%; background: var(--thread-soft); color: var(--ink); padding: 8px 16px; }
+.chat-turn.assistant p { border: 0; background: transparent; padding: 0; color: var(--ink); line-height: 1.625; }
+#modal .chat-turn.user p { border-radius: var(--thread-radius); }
+#office-chat-form { align-items: center; padding: 6px; border: 1px solid var(--thread-line-strong); background: var(--white); }
+#modal #office-chat-form { border-radius: var(--thread-radius); }
+#office-chat-form input { border: 0; outline: 0; background: transparent; }
+#modal #office-chat-form .primary { min-height: 32px; padding: 0 14px; border-radius: 999px; box-shadow: none; }
+
+/* With the thread panel open the column is narrow: the chips keep their icons. */
+body.room-thread-open #room-form .composer-chip-label,
+body.room-thread-open #room-form .composer-chip-caret,
+body.room-thread-open #room-form #room-hint { display: none; }
+
+/* ---- A phone ---- */
+@media (max-width: 760px) {
+  #room-form .composer-tool.room-at { display: none; }
+  #room-form #composer-model-slot { min-width: 0; flex: 0 1 auto; }
+  #room-form .composer-chip { max-width: 130px; padding: 0 6px; }
+  #room-form #composer-mode button { padding: 0 8px; }
+  /* While work runs, Queue and Steer need the room; the model stays in the + menu. */
+  #room-form #composer-mode:not([hidden]) ~ #composer-model-slot { display: none; }
+  .icon-tool, .verdict-btn { width: 32px; height: 32px; }
+  /* The idea button sits above the box, never on the send. */
+  body:has(#room-form:not([hidden])) .idea-fab { bottom: calc(190px + env(safe-area-inset-bottom)); }
+  #room-form #room-hint { display: none; }
+}
+@media (max-width: 760px) {
+  #shell #content #room-form #composer-mode:not([hidden]) ~ #room-send { margin-left: auto; }
+}
+
+/* ---- A routine's room: its runs by date (room_days.js) ---- */
+/* A run is one quiet line; what it asked is folded, once, in the index. */
+.room-feed > li.room-run { scroll-margin-top: 110px; padding: 8px 0 2px; border-top: 1px solid var(--thread-line); }
+.room-run-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; font-size: 0.8125rem; }
+.room-run-head strong { font-weight: 600; color: var(--ink); }
+.room-run-mark { color: var(--muted); }
+.room-run-asks, .room-days-asks { margin-top: 6px; font-size: 0.8125rem; }
+:is(.room-run-asks, .room-days-asks) summary { cursor: pointer; color: var(--muted); }
+:is(.room-run-asks, .room-days-asks) p { white-space: pre-wrap; overflow-wrap: anywhere; margin: 6px 0 0; font-size: 0.8125rem; line-height: 1.55; color: #4f5d55; max-height: 40vh; overflow-y: auto; }
+.room-feed > li.room-run.room-flash { box-shadow: 0 0 0 3px #e7d3a8; border-radius: 6px; transition: box-shadow .3s; }
+
+/* The index: above the thread by default, beside it when the page has room. */
+#room-messages.has-days { position: relative; }
+/* A block, not the site menu's flex row that a bare nav gets on a phone. */
+.room-days { display: block; margin: 12px 0 0; font-size: 0.8125rem; }
+.room-days[hidden] { display: none; }
+#room-messages.has-days:not(.days-beside) .room-days { position: sticky; top: calc(var(--room-days-top, 64px) + 6px); z-index: 5; }
+#room-messages.has-days:not(.days-beside) .room-feed > li.room-run { scroll-margin-top: calc(var(--room-days-top, 64px) + 64px); }
+.room-days-inner { border: 1px solid var(--thread-line); border-radius: 10px; padding: 6px 10px; background: var(--white); }
+.room-days-toggle {
+  display: flex; align-items: center; gap: 6px; width: 100%; min-height: 32px; padding: 0;
+  border: 0; background: transparent; font: inherit; font-weight: 600; color: var(--ink); cursor: pointer; text-align: left;
+}
+.room-days-chevron { margin-left: auto; color: var(--muted); }
+.room-days-body { padding: 4px 0 6px; max-height: 40vh; overflow-y: auto; }
+.room-days-list, .room-days-month ol { list-style: none; margin: 0; padding: 0; }
+.room-days-month ol { padding-left: 10px; }
+.room-days-month summary { cursor: pointer; padding: 6px 0; color: var(--muted); }
+.room-days-go {
+  display: block; width: 100%; min-height: 30px; padding: 4px 6px; border: 0; border-radius: 6px;
+  background: transparent; font: inherit; color: var(--ink); text-align: left; cursor: pointer; white-space: nowrap;
+}
+.room-days-go:hover, .room-days-go:focus-visible { background: var(--thread-soft); }
+.room-days-go[aria-current="true"] { background: var(--thread-soft); font-weight: 600; }
+
+#room-messages.days-beside:not(.days-folded) { max-width: calc(var(--thread-width) + 192px); padding-left: 192px; }
+#room-messages.days-beside:not(.days-folded) .room-days { position: absolute; top: 0; bottom: 0; left: 0; width: 168px; margin: 0; }
+#room-messages.days-beside:not(.days-folded) .room-days-inner { position: sticky; top: 96px; }
+#room-messages.days-beside:not(.days-folded) .room-days-body { max-height: calc(100vh - 200px); }

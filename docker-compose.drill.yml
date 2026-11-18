@@ -1,0 +1,26 @@
+# The restore drill's stack: separate volumes, separate ports, no live data.
+#
+#   python3 -m scripts.restore_drill
+#
+# Always used with its own project name (-p quarterdeck-drill), so every volume
+# is a new one and the office running on this machine is never touched. The
+# backups directory is the only thing shared, and it is mounted read-only.
+
+services:
+  postgres:
+    # !override: Compose appends list entries across files; the live ports
+    # must be replaced, not joined, or the drill collides with the office.
+    ports: !override
+      - "127.0.0.1:5434:5432"
+
+  api:
+    ports: !override
+      - "127.0.0.1:8001:8000"
+    volumes: !override
+      - workspace_data:/workspace
+      - engineering_data:/engineering
+      - sources_exchange:/sources-exchange
+      - fetch_exchange:/fetch-exchange
+      - ${SECRET_KEY_DIR:-./.secrets}:/run/quarterdeck-secrets:ro
+      # Read-only: the drill restores from an archive and must not write one.
+      - ${BACKUP_HOST_DIR:-./backups}:/backups:ro
