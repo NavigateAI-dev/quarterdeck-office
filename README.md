@@ -60,9 +60,11 @@ To try it: [Install](#install).
 
 ## See it in one minute
 
-[![Quarterdeck in one minute: ask, plan, press Start, approve, get a document](docs/media/quarterdeck-showcase-poster.jpg)](docs/media/quarterdeck-showcase.mp4)
+[![Quarterdeck in one minute: ask, plan, press Start, approve, get a document](docs/media/quarterdeck-showcase.gif)](docs/media/quarterdeck-showcase.mp4)
 
-A one-minute tour, silent with captions: [docs/media/quarterdeck-showcase.mp4](docs/media/quarterdeck-showcase.mp4).
+A one-minute tour, silent with captions. It plays here as an animation; the
+same tour in full quality is
+[docs/media/quarterdeck-showcase.mp4](docs/media/quarterdeck-showcase.mp4).
 It shows the real interface with sample data: no model was called while
 recording, so the replies, the plan and the report on screen are examples.
 
