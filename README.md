@@ -92,8 +92,8 @@ workspace, and Tailscale to reach the office from your phone away from home.
 1. Get the code:
 
    ```sh
-   git clone https://github.com/NavigateAI-dev/quarterdeck.git
-   cd quarterdeck
+   git clone https://github.com/NavigateAI-dev/quarterdeck-office.git
+   cd quarterdeck-office
    ```
 
 2. Start Docker Desktop and wait until it says it is running.

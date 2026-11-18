@@ -130,7 +130,7 @@ You need a Mac with Docker Desktop and Python 3.9 or later. A coding CLI is
 optional, for building.
 
 ```sh
-git clone https://github.com/NavigateAI-dev/quarterdeck.git && cd quarterdeck
+git clone https://github.com/NavigateAI-dev/quarterdeck-office.git && cd quarterdeck-office
 python3 -m scripts.launch
 ```
 
