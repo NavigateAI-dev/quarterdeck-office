@@ -1,9 +1,12 @@
 """The helper on the owner's Mac: asked only after the press."""
 
 import plistlib
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+
+import pytest
 
 from scripts import mac_calendar as helper
 
@@ -101,6 +104,7 @@ def test_free_and_cancelled_events_are_told_apart() -> None:
     assert helper.event_payload(FakeEvent(status=helper.CANCELED)) is None
 
 
+@pytest.mark.skipif(sys.platform != "darwin", reason="The helper app is signed with macOS codesign")
 def test_the_helper_app_names_itself_and_says_why_it_asks(tmp_path: Path) -> None:
     app = tmp_path / "Quarterdeck Calendar.app"
     assert helper.install(app, tmp_path) is True
